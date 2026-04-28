@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Profile extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'uuid',
@@ -20,6 +20,7 @@ class Profile extends Model
         'has_diabetes',
         'has_hypertension',
         'photo_path',
+        'notes',
     ];
 
     protected $casts = [

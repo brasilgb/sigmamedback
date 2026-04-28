@@ -14,6 +14,11 @@ class Tenant extends Model
         'name',
         'slug',
         'owner_id',
+        'sync_enabled',
+    ];
+
+    protected $casts = [
+        'sync_enabled' => 'boolean',
     ];
 
     public function users()

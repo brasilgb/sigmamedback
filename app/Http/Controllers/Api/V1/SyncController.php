@@ -9,6 +9,7 @@ use App\Models\BloodPressureReading;
 use App\Models\GlicoseReading;
 use App\Models\Medication;
 use App\Models\MedicationLog;
+use App\Models\Profile;
 use App\Models\WeightReading;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +31,7 @@ class SyncController extends Controller
             'medication-logs' => $this->syncMedicationLogs($tenant, $items),
         };
 
-        return $this->successResponse($results, ucfirst($resource) . ' push completed.');
+        return $this->successResponse($results, ucfirst($resource).' push completed.');
     }
 
     public function pull(SyncPullRequest $request): JsonResponse
@@ -47,18 +48,21 @@ class SyncController extends Controller
             'medication-logs' => $this->pullResource(MedicationLog::class, $tenant->id, $since),
         };
 
-        return $this->successResponse($items, ucfirst($resource) . ' pull completed.');
+        return $this->successResponse($items, ucfirst($resource).' pull completed.');
     }
 
     protected function syncBloodPressure($tenant, $items)
     {
         return $items->map(function (array $item) use ($tenant) {
+            $this->validateProfile($tenant, $item['profile_id']);
+
             $reading = BloodPressureReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->where('uuid', $item['uuid'])
                 ->first();
 
             $incomingUpdatedAt = isset($item['updated_at']) ? Carbon::parse($item['updated_at']) : null;
+            $incomingDeletedAt = isset($item['deleted_at']) ? Carbon::parse($item['deleted_at']) : null;
 
             if ($reading && $incomingUpdatedAt && $reading->updated_at->gt($incomingUpdatedAt)) {
                 return $reading;
@@ -85,6 +89,12 @@ class SyncController extends Controller
                 $reading->updated_at = $incomingUpdatedAt;
             }
 
+            if ($incomingDeletedAt) {
+                $reading->deleted_at = $incomingDeletedAt;
+            } elseif ($reading->deleted_at && $incomingUpdatedAt && $incomingUpdatedAt->gt($reading->deleted_at)) {
+                $reading->deleted_at = null;
+            }
+
             $reading->save();
 
             return $reading;
@@ -94,12 +104,15 @@ class SyncController extends Controller
     protected function syncGlicose($tenant, $items)
     {
         return $items->map(function (array $item) use ($tenant) {
+            $this->validateProfile($tenant, $item['profile_id']);
+
             $reading = GlicoseReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->where('uuid', $item['uuid'])
                 ->first();
 
             $incomingUpdatedAt = isset($item['updated_at']) ? Carbon::parse($item['updated_at']) : null;
+            $incomingDeletedAt = isset($item['deleted_at']) ? Carbon::parse($item['deleted_at']) : null;
 
             if ($reading && $incomingUpdatedAt && $reading->updated_at->gt($incomingUpdatedAt)) {
                 return $reading;
@@ -126,6 +139,12 @@ class SyncController extends Controller
                 $reading->updated_at = $incomingUpdatedAt;
             }
 
+            if ($incomingDeletedAt) {
+                $reading->deleted_at = $incomingDeletedAt;
+            } elseif ($reading->deleted_at && $incomingUpdatedAt && $incomingUpdatedAt->gt($reading->deleted_at)) {
+                $reading->deleted_at = null;
+            }
+
             $reading->save();
 
             return $reading;
@@ -135,12 +154,15 @@ class SyncController extends Controller
     protected function syncWeight($tenant, $items)
     {
         return $items->map(function (array $item) use ($tenant) {
+            $this->validateProfile($tenant, $item['profile_id']);
+
             $reading = WeightReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->where('uuid', $item['uuid'])
                 ->first();
 
             $incomingUpdatedAt = isset($item['updated_at']) ? Carbon::parse($item['updated_at']) : null;
+            $incomingDeletedAt = isset($item['deleted_at']) ? Carbon::parse($item['deleted_at']) : null;
 
             if ($reading && $incomingUpdatedAt && $reading->updated_at->gt($incomingUpdatedAt)) {
                 return $reading;
@@ -166,6 +188,12 @@ class SyncController extends Controller
                 $reading->updated_at = $incomingUpdatedAt;
             }
 
+            if ($incomingDeletedAt) {
+                $reading->deleted_at = $incomingDeletedAt;
+            } elseif ($reading->deleted_at && $incomingUpdatedAt && $incomingUpdatedAt->gt($reading->deleted_at)) {
+                $reading->deleted_at = null;
+            }
+
             $reading->save();
 
             return $reading;
@@ -175,12 +203,15 @@ class SyncController extends Controller
     protected function syncMedications($tenant, $items)
     {
         return $items->map(function (array $item) use ($tenant) {
+            $this->validateProfile($tenant, $item['profile_id']);
+
             $medication = Medication::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->where('uuid', $item['uuid'])
                 ->first();
 
             $incomingUpdatedAt = isset($item['updated_at']) ? Carbon::parse($item['updated_at']) : null;
+            $incomingDeletedAt = isset($item['deleted_at']) ? Carbon::parse($item['deleted_at']) : null;
 
             if ($medication && $incomingUpdatedAt && $medication->updated_at->gt($incomingUpdatedAt)) {
                 return $medication;
@@ -210,6 +241,12 @@ class SyncController extends Controller
                 $medication->updated_at = $incomingUpdatedAt;
             }
 
+            if ($incomingDeletedAt) {
+                $medication->deleted_at = $incomingDeletedAt;
+            } elseif ($medication->deleted_at && $incomingUpdatedAt && $incomingUpdatedAt->gt($medication->deleted_at)) {
+                $medication->deleted_at = null;
+            }
+
             $medication->save();
 
             return $medication;
@@ -219,6 +256,8 @@ class SyncController extends Controller
     protected function syncMedicationLogs($tenant, $items)
     {
         return $items->map(function (array $item) use ($tenant) {
+            $this->validateProfile($tenant, $item['profile_id']);
+
             $log = MedicationLog::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->where('uuid', $item['uuid'])
@@ -282,5 +321,16 @@ class SyncController extends Controller
         }
 
         return $query->get();
+    }
+
+    protected function validateProfile($tenant, $profileId)
+    {
+        $exists = Profile::where('tenant_id', $tenant->id)
+            ->where('id', $profileId)
+            ->exists();
+
+        if (! $exists) {
+            abort(422, "Invalid profile_id: {$profileId}");
+        }
     }
 }

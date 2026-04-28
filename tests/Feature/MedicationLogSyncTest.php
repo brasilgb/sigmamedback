@@ -20,6 +20,7 @@ test('medication logs can sync with medication_uuid and soft delete via deleted_
         'name' => 'Tenant Test',
         'slug' => 'tenant-test',
         'owner_id' => $user->id,
+        'sync_enabled' => true,
     ]);
 
     $tenant->users()->attach($user->id, ['role' => 'owner']);

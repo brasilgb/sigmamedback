@@ -18,6 +18,7 @@ test('medication sync accepts full datetime scheduled_time and returns it in YYY
         'name' => 'Tenant Test',
         'slug' => 'tenant-test',
         'owner_id' => $user->id,
+        'sync_enabled' => true,
     ]);
 
     $tenant->users()->attach($user->id, ['role' => 'owner']);

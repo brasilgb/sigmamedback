@@ -37,11 +37,24 @@ class AuthController extends Controller
 
         $tenant->users()->attach($user, ['role' => 'owner']);
 
+        $accountUsage = $request->input('account_usage');
+        $profileName = $accountUsage === 'personal' ? $user->name : ($request->input('patient_name') ?? $user->name);
+
+        $profile = Profile::create([
+            'uuid' => Str::uuid()->toString(),
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'name' => $profileName,
+            'height' => $request->input('height'),
+            'notes' => $accountUsage === 'personal' ? 'Perfil pessoal' : ($accountUsage === 'family' ? 'Acompanhamento familiar' : 'Acompanhamento profissional'),
+        ]);
+
         $token = $user->createToken('mobile')->plainTextToken;
 
         return $this->successResponse([
             'user' => $user,
             'tenant' => $tenant,
+            'profile' => $profile,
             'token' => $token,
         ], 'Registration successful.');
     }
@@ -54,10 +67,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
         $token = $user->createToken('mobile')->plainTextToken;
+        $tenant = $user->currentTenant();
+        $profile = $user->profiles()->where('tenant_id', $tenant?->id)->first();
 
         return $this->successResponse([
             'user' => $user,
             'token' => $token,
+            'tenant' => $tenant,
+            'profile' => $profile,
         ], 'Login successful.');
     }
 
@@ -70,10 +87,37 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
+        $user = $request->user();
+        $tenant = $user?->currentTenant();
+        $profile = $user->profiles()->where('tenant_id', $tenant?->id)->first();
+
         return $this->successResponse([
-            'user' => $request->user(),
-            'tenant' => $request->user()?->currentTenant(),
+            'user' => $user,
+            'tenant' => $tenant,
+            'profile' => $profile,
         ], 'Authenticated user.');
+    }
+
+    public function destroy(Request $request)
+    {
+        $user = $request->user();
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        // Get tenants where the user is the owner
+        $tenants = $user->tenants()->wherePivot('role', 'owner')->get();
+
+        foreach ($tenants as $tenant) {
+            // Delete profiles and clinical data will be handled by the database if cascade is set,
+            // or we can manually delete them here.
+            // Since I don't see SoftDeletes on User/Tenant, we do a force delete.
+            $tenant->delete();
+        }
+
+        $user->delete();
+
+        return $this->successResponse([], 'Account deleted.');
     }
 
     public function update(UpdateProfileRequest $request)
