@@ -23,24 +23,41 @@ test('user can register with personal account usage', function () {
         'height' => 170,
         'notes' => 'Perfil pessoal',
     ]);
+    $this->assertDatabaseHas('tenants', [
+        'name' => 'João Silva',
+        'account_usage' => 'personal',
+        'sync_enabled' => false,
+    ]);
+    $this->assertDatabaseHas('payments', [
+        'status' => 'inactive',
+        'payment_method' => 'none',
+        'plan_type' => 'personal',
+    ]);
 });
 
-test('user can register with family account usage and patient name', function () {
+test('user can register with family account usage without creating accompanied person', function () {
     $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'João Silva',
         'email' => 'joao2@exemplo.com',
         'password' => 'secret123',
         'password_confirmation' => 'secret123',
         'account_usage' => 'family',
-        'patient_name' => 'Maria Silva',
-        'height' => 165,
+        'age' => null,
+        'height' => null,
     ]);
 
     $response->assertOk();
     $response->assertJsonStructure(['data' => ['user', 'tenant', 'profile', 'token']]);
+    $response->assertJsonPath('data.tenant.account_usage', 'family');
+    $response->assertJsonPath('data.profile.name', 'João Silva');
     $this->assertDatabaseHas('profiles', [
-        'name' => 'Maria Silva',
-        'height' => 165,
+        'name' => 'João Silva',
+        'height' => null,
         'notes' => 'Acompanhamento familiar',
+    ]);
+    $this->assertDatabaseHas('payments', [
+        'status' => 'inactive',
+        'payment_method' => 'none',
+        'plan_type' => 'family',
     ]);
 });

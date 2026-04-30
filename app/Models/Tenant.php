@@ -14,6 +14,7 @@ class Tenant extends Model
         'name',
         'slug',
         'owner_id',
+        'account_usage',
         'sync_enabled',
     ];
 

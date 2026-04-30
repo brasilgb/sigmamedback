@@ -11,6 +11,7 @@ interface Stat {
 interface Tenant {
     id: number;
     name: string;
+    account_usage?: string;
     sync_enabled: boolean;
 }
 
@@ -18,6 +19,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    user_type: string;
     tenants: Tenant[];
     created_at: string;
 }
@@ -32,6 +34,22 @@ interface Props {
 
 const Dashboard: React.FC<Props> = ({ stats, users }) => {
     const [editingUser, setEditingUser] = useState<User | null>(null);
+
+    const userTypeClasses = (userType: string) => {
+        if (userType === 'Root') {
+            return 'bg-red-500/20 text-red-300 border-red-500/30';
+        }
+
+        if (userType === 'Familiar/cuidador') {
+            return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+        }
+
+        if (userType === 'Profissional') {
+            return 'bg-violet-500/20 text-violet-300 border-violet-500/30';
+        }
+
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+    };
     
     const { data, setData, put, processing, errors, reset } = useForm({
         name: '',
@@ -93,7 +111,7 @@ const Dashboard: React.FC<Props> = ({ stats, users }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl hover:scale-105 transition-transform">
-                        <p className="text-gray-400 text-sm mb-1">Total de Usuários</p>
+                        <p className="text-gray-400 text-sm mb-1">Usuários do App</p>
                         <p className="text-3xl font-bold">{stats.total_users}</p>
                     </div>
                     <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl hover:scale-105 transition-transform">
@@ -120,6 +138,7 @@ const Dashboard: React.FC<Props> = ({ stats, users }) => {
                                 <tr className="bg-gray-900/50 text-gray-400 text-sm">
                                     <th className="px-6 py-4 font-medium">Nome</th>
                                     <th className="px-6 py-4 font-medium">Email</th>
+                                    <th className="px-6 py-4 font-medium">Tipo</th>
                                     <th className="px-6 py-4 font-medium">Tenant/Plano</th>
                                     <th className="px-6 py-4 font-medium">Data Cadastro</th>
                                     <th className="px-6 py-4 font-medium text-right">Ações</th>
@@ -130,6 +149,11 @@ const Dashboard: React.FC<Props> = ({ stats, users }) => {
                                     <tr key={user.id} className="hover:bg-gray-700/30 transition-colors group">
                                         <td className="px-6 py-4 font-medium">{user.name}</td>
                                         <td className="px-6 py-4 text-gray-400">{user.email}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex whitespace-nowrap rounded-md border px-2 py-1 text-xs font-bold ${userTypeClasses(user.user_type)}`}>
+                                                {user.user_type}
+                                            </span>
+                                        </td>
                                         <td className="px-6 py-4">
                                             {user.tenants.map(t => (
                                                 <div key={t.id} className="flex items-center gap-3">

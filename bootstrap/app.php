@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Middleware\CheckSyncEnabled;
+use App\Http\Middleware\EnsureTenantAccess;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Http\Middleware\TenantMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'tenant' => TenantMiddleware::class,
+            'tenant' => EnsureTenantAccess::class,
             'sync_enabled' => CheckSyncEnabled::class,
             'admin' => EnsureUserIsAdmin::class,
         ]);

@@ -14,7 +14,7 @@ class DashboardController extends Controller
     public function index()
     {
         $stats = [
-            'total_users' => User::count(),
+            'total_users' => User::where('is_admin', false)->count(),
             'active_subscriptions' => Tenant::where('sync_enabled', true)->count(),
             'total_revenue' => Payment::where('status', 'approved')->sum('amount'),
             'pending_payments' => Payment::where('status', 'pending')->count(),
@@ -24,12 +24,30 @@ class DashboardController extends Controller
             $query->withPivot('role');
         }])
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->through(function (User $user) {
+                $user->setAttribute('user_type', $this->resolveUserType($user));
+
+                return $user;
+            });
 
         return Inertia::render('admin/dashboard', [
             'stats' => $stats,
             'users' => $users,
         ]);
+    }
+
+    protected function resolveUserType(User $user): string
+    {
+        if ($user->is_admin) {
+            return 'Root';
+        }
+
+        return match ($user->tenants->first()?->account_usage) {
+            'family' => 'Familiar/cuidador',
+            'professional' => 'Profissional',
+            default => 'Pessoal',
+        };
     }
 
     public function payments()

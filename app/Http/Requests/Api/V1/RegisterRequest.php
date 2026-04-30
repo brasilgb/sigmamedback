@@ -20,7 +20,7 @@ class RegisterRequest extends FormRequest
             'age' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:120'],
             'height' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:300'],
             'account_usage' => ['required', 'string', 'in:personal,family,professional'],
-            'patient_name' => ['required_if:account_usage,family,professional', 'nullable', 'string', 'max:255'],
+            'patient_name' => ['sometimes', 'nullable', 'string', 'max:255'],
         ];
     }
 }

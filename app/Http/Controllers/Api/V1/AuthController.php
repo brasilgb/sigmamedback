@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Requests\Api\V1\UploadAvatarRequest;
+use App\Models\Payment;
 use App\Models\Profile;
 use App\Models\Tenant;
 use App\Models\User;
@@ -21,6 +22,8 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
     {
+        $accountUsage = $request->input('account_usage');
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -33,20 +36,26 @@ class AuthController extends Controller
             'name' => $user->name,
             'slug' => Str::slug($user->name) ?: Str::uuid()->toString(),
             'owner_id' => $user->id,
+            'account_usage' => $accountUsage,
         ]);
 
         $tenant->users()->attach($user, ['role' => 'owner']);
-
-        $accountUsage = $request->input('account_usage');
-        $profileName = $accountUsage === 'personal' ? $user->name : ($request->input('patient_name') ?? $user->name);
 
         $profile = Profile::create([
             'uuid' => Str::uuid()->toString(),
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
-            'name' => $profileName,
+            'name' => $user->name,
             'height' => $request->input('height'),
             'notes' => $accountUsage === 'personal' ? 'Perfil pessoal' : ($accountUsage === 'family' ? 'Acompanhamento familiar' : 'Acompanhamento profissional'),
+        ]);
+
+        Payment::create([
+            'tenant_id' => $tenant->id,
+            'amount' => 0,
+            'status' => 'inactive',
+            'payment_method' => 'none',
+            'plan_type' => $accountUsage,
         ]);
 
         $token = $user->createToken('mobile')->plainTextToken;
@@ -61,7 +70,11 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
-        if (! Auth::attempt($request->only(['email', 'password']))) {
+        if (! Auth::attempt([
+            'email' => $request->email,
+            'password' => $request->password,
+            'is_admin' => false,
+        ])) {
             return $this->errorResponse('Invalid credentials.', 422);
         }
 

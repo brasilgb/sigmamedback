@@ -15,6 +15,7 @@ class Profile extends Model
         'tenant_id',
         'user_id',
         'name',
+        'age',
         'height',
         'target_weight',
         'has_diabetes',

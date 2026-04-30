@@ -2,9 +2,11 @@
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\MercadoPagoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Mockery\MockInterface;
 
 uses(RefreshDatabase::class);
 
@@ -40,6 +42,21 @@ test('user can create checkout pix', function () {
     ]);
 
     $tenant->users()->attach($user->id, ['role' => 'owner']);
+
+    $this->mock(MercadoPagoService::class, function (MockInterface $mock) {
+        $mock->shouldReceive('createPixPayment')
+            ->once()
+            ->andReturn([
+                'id' => 123456789,
+                'date_of_expiration' => now()->addMinutes(30)->toIso8601String(),
+                'point_of_interaction' => [
+                    'transaction_data' => [
+                        'qr_code' => '000201...',
+                        'qr_code_base64' => 'iVBORw0KGgo...',
+                    ],
+                ],
+            ]);
+    });
 
     Sanctum::actingAs($user, ['*']);
 

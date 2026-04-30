@@ -29,11 +29,12 @@ class ProfileController extends Controller
             'tenant_id' => $tenant->id,
             'user_id' => $request->user()->id,
             'name' => $request->name,
+            'age' => $request->input('age'),
             'height' => $request->height,
             'notes' => $request->notes,
         ]);
 
-        return $this->successResponse($profile, 'Profile created.', 201);
+        return $this->successResponse($profile, 'Profile created.', status: 201);
     }
 
     public function show(Request $request)

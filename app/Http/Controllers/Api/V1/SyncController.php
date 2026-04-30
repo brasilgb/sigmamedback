@@ -20,41 +20,43 @@ class SyncController extends Controller
     public function push(SyncPushRequest $request): JsonResponse
     {
         $tenant = TenantContext::current();
+        $userId = $request->user()->id;
         $resource = $request->resource;
         $items = collect($request->validated('items'));
 
         $results = match ($resource) {
-            'blood-pressure' => $this->syncBloodPressure($tenant, $items),
-            'glicose' => $this->syncGlicose($tenant, $items),
-            'weight' => $this->syncWeight($tenant, $items),
-            'medications' => $this->syncMedications($tenant, $items),
-            'medication-logs' => $this->syncMedicationLogs($tenant, $items),
+            'blood-pressure' => $this->syncBloodPressure($tenant, $userId, $items),
+            'glicose' => $this->syncGlicose($tenant, $userId, $items),
+            'weight' => $this->syncWeight($tenant, $userId, $items),
+            'medications' => $this->syncMedications($tenant, $userId, $items),
+            'medication-logs' => $this->syncMedicationLogs($tenant, $userId, $items),
         };
 
-        return $this->successResponse($results, ucfirst($resource).' push completed.');
+        return $this->syncResponse($results, ucfirst($resource).' push completed.');
     }
 
     public function pull(SyncPullRequest $request): JsonResponse
     {
         $tenant = TenantContext::current();
+        $userId = $request->user()->id;
         $resource = $request->resource;
         $since = $request->input('since');
 
         $items = match ($resource) {
-            'blood-pressure' => $this->pullResource(BloodPressureReading::class, $tenant->id, $since),
-            'glicose' => $this->pullResource(GlicoseReading::class, $tenant->id, $since),
-            'weight' => $this->pullResource(WeightReading::class, $tenant->id, $since),
-            'medications' => $this->pullResource(Medication::class, $tenant->id, $since),
-            'medication-logs' => $this->pullResource(MedicationLog::class, $tenant->id, $since),
+            'blood-pressure' => $this->pullResource(BloodPressureReading::class, $tenant->id, $userId, $since),
+            'glicose' => $this->pullResource(GlicoseReading::class, $tenant->id, $userId, $since),
+            'weight' => $this->pullResource(WeightReading::class, $tenant->id, $userId, $since),
+            'medications' => $this->pullResource(Medication::class, $tenant->id, $userId, $since),
+            'medication-logs' => $this->pullResource(MedicationLog::class, $tenant->id, $userId, $since),
         };
 
-        return $this->successResponse($items, ucfirst($resource).' pull completed.');
+        return $this->syncResponse($items, ucfirst($resource).' pull completed.');
     }
 
-    protected function syncBloodPressure($tenant, $items)
+    protected function syncBloodPressure($tenant, int $userId, $items)
     {
-        return $items->map(function (array $item) use ($tenant) {
-            $this->validateProfile($tenant, $item['profile_id']);
+        return $items->map(function (array $item) use ($tenant, $userId) {
+            $this->validateProfile($tenant, $userId, $item['profile_id']);
 
             $reading = BloodPressureReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -101,10 +103,10 @@ class SyncController extends Controller
         });
     }
 
-    protected function syncGlicose($tenant, $items)
+    protected function syncGlicose($tenant, int $userId, $items)
     {
-        return $items->map(function (array $item) use ($tenant) {
-            $this->validateProfile($tenant, $item['profile_id']);
+        return $items->map(function (array $item) use ($tenant, $userId) {
+            $this->validateProfile($tenant, $userId, $item['profile_id']);
 
             $reading = GlicoseReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -151,10 +153,10 @@ class SyncController extends Controller
         });
     }
 
-    protected function syncWeight($tenant, $items)
+    protected function syncWeight($tenant, int $userId, $items)
     {
-        return $items->map(function (array $item) use ($tenant) {
-            $this->validateProfile($tenant, $item['profile_id']);
+        return $items->map(function (array $item) use ($tenant, $userId) {
+            $this->validateProfile($tenant, $userId, $item['profile_id']);
 
             $reading = WeightReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -200,10 +202,10 @@ class SyncController extends Controller
         });
     }
 
-    protected function syncMedications($tenant, $items)
+    protected function syncMedications($tenant, int $userId, $items)
     {
-        return $items->map(function (array $item) use ($tenant) {
-            $this->validateProfile($tenant, $item['profile_id']);
+        return $items->map(function (array $item) use ($tenant, $userId) {
+            $this->validateProfile($tenant, $userId, $item['profile_id']);
 
             $medication = Medication::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -253,10 +255,10 @@ class SyncController extends Controller
         });
     }
 
-    protected function syncMedicationLogs($tenant, $items)
+    protected function syncMedicationLogs($tenant, int $userId, $items)
     {
-        return $items->map(function (array $item) use ($tenant) {
-            $this->validateProfile($tenant, $item['profile_id']);
+        return $items->map(function (array $item) use ($tenant, $userId) {
+            $this->validateProfile($tenant, $userId, $item['profile_id']);
 
             $log = MedicationLog::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -309,9 +311,15 @@ class SyncController extends Controller
         });
     }
 
-    protected function pullResource(string $model, int $tenantId, ?string $since)
+    protected function pullResource(string $model, int $tenantId, int $userId, ?string $since)
     {
-        $query = $model::withTrashed()->where('tenant_id', $tenantId);
+        $profileIds = Profile::where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->pluck('id');
+
+        $query = $model::withTrashed()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('profile_id', $profileIds);
 
         if ($since) {
             $query->where(function ($query) use ($since) {
@@ -323,14 +331,25 @@ class SyncController extends Controller
         return $query->get();
     }
 
-    protected function validateProfile($tenant, $profileId)
+    protected function validateProfile($tenant, int $userId, $profileId)
     {
         $exists = Profile::where('tenant_id', $tenant->id)
+            ->where('user_id', $userId)
             ->where('id', $profileId)
             ->exists();
 
         if (! $exists) {
             abort(422, "Invalid profile_id: {$profileId}");
         }
+    }
+
+    protected function syncResponse($data, string $message): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'meta' => new \stdClass,
+            'data' => $data,
+        ]);
     }
 }
