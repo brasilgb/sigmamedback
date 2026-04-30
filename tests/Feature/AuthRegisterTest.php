@@ -18,6 +18,12 @@ test('user can register with personal account usage', function () {
     $response->assertOk();
     $response->assertJsonPath('data.user.name', 'João Silva');
     $response->assertJsonStructure(['data' => ['user', 'tenant', 'profile', 'token']]);
+    $this->assertDatabaseHas('users', [
+        'name' => 'João Silva',
+        'email' => 'joao@exemplo.com',
+        'age' => 35,
+        'is_admin' => false,
+    ]);
     $this->assertDatabaseHas('profiles', [
         'name' => 'João Silva',
         'height' => 170,
@@ -50,6 +56,12 @@ test('user can register with family account usage without creating accompanied p
     $response->assertJsonStructure(['data' => ['user', 'tenant', 'profile', 'token']]);
     $response->assertJsonPath('data.tenant.account_usage', 'family');
     $response->assertJsonPath('data.profile.name', 'João Silva');
+    $this->assertDatabaseHas('users', [
+        'name' => 'João Silva',
+        'email' => 'joao2@exemplo.com',
+        'age' => null,
+        'is_admin' => false,
+    ]);
     $this->assertDatabaseHas('profiles', [
         'name' => 'João Silva',
         'height' => null,
