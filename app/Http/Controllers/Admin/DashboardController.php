@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Feedback;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\User;
@@ -61,6 +62,31 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function feedbacks()
+    {
+        $feedbacks = Feedback::with(['tenant:id,name', 'user:id,name,email'])
+            ->latest()
+            ->paginate(20);
+
+        $stats = [
+            'total' => Feedback::count(),
+            'average_rating' => round((float) Feedback::whereNotNull('rating')->avg('rating'), 1),
+            'comments' => Feedback::whereNotNull('comment')->count(),
+            'latest_at' => Feedback::latest()->value('created_at'),
+        ];
+
+        $ratingDistribution = collect(range(5, 1))
+            ->mapWithKeys(fn (int $rating): array => [
+                $rating => Feedback::where('rating', $rating)->count(),
+            ]);
+
+        return Inertia::render('admin/feedbacks', [
+            'feedbacks' => $feedbacks,
+            'stats' => $stats,
+            'ratingDistribution' => $ratingDistribution,
+        ]);
+    }
+
     public function toggleSync(Tenant $tenant)
     {
         $tenant->update([
@@ -75,7 +101,7 @@ class DashboardController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:6',
         ]);
 
         $data = [

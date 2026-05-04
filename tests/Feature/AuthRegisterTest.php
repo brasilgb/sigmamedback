@@ -73,3 +73,18 @@ test('user can register with family account usage without creating accompanied p
         'plan_type' => 'family',
     ]);
 });
+
+test('user can register with six character password', function () {
+    $response = $this->postJson('/api/v1/auth/register', [
+        'name' => 'João Silva',
+        'email' => 'joao6@exemplo.com',
+        'password' => '123456',
+        'password_confirmation' => '123456',
+        'account_usage' => 'personal',
+        'age' => 35,
+        'height' => 170,
+    ]);
+
+    $response->assertOk();
+    $response->assertJsonPath('data.user.email', 'joao6@exemplo.com');
+});

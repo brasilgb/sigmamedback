@@ -14,6 +14,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
         Route::get('/payments', [DashboardController::class, 'payments'])->name('admin.payments');
+        Route::get('/feedbacks', [DashboardController::class, 'feedbacks'])->name('admin.feedbacks');
         Route::post('/tenants/{tenant}/toggle-sync', [DashboardController::class, 'toggleSync'])->name('admin.tenants.toggle-sync');
         Route::put('/users/{user}', [DashboardController::class, 'updateUser'])->name('admin.users.update');
         Route::delete('/users/{user}', [DashboardController::class, 'deleteUser'])->name('admin.users.delete');

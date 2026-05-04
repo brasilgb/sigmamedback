@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillingController;
+use App\Http\Controllers\Api\V1\FeedbackController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\Sync\BloodPressureSyncController;
 use App\Http\Controllers\Api\V1\Sync\GlicoseSyncController;
@@ -37,6 +38,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('profile', [ProfileController::class, 'update']);
         Route::get('profiles', [ProfileController::class, 'index']);
         Route::post('profiles', [ProfileController::class, 'store']);
+        Route::post('feedback', [FeedbackController::class, 'store']);
 
         Route::prefix('billing')->group(function () {
             Route::get('sync-access', [BillingController::class, 'syncAccess']);

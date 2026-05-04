@@ -103,6 +103,9 @@ const Dashboard: React.FC<Props> = ({ stats, users }) => {
                         <Link href="/admin/payments" className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
                             Pagamentos
                         </Link>
+                        <Link href="/admin/feedbacks" className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                            Feedbacks
+                        </Link>
                         <Link href="/admin/logout" method="post" as="button" className="px-4 py-2 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors">
                             Sair
                         </Link>

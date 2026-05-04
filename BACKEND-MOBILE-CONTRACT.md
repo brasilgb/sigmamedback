@@ -46,10 +46,12 @@ Payload de registro esperado:
   "email": "joao@exemplo.com",
   "age": 35,
   "height": 170,
-  "password": "secret123",
-  "password_confirmation": "secret123"
+  "password": "123456",
+  "password_confirmation": "123456"
 }
 ```
+
+Senha deve ter no mínimo 6 caracteres.
 
 Para `family`, `age` e `height` podem ser `null` no cadastro da conta. O backend deve criar a conta principal, tenant e cliente SaaS, mas nao precisa criar pessoa acompanhada nesse endpoint. Depois do cadastro, o app apenas informa que os acompanhados devem ser cadastrados em Configurações > Acompanhados, tela que chama `POST /profiles`.
 No app atual, se ja existir uma conta principal local, cadastro de outro usuario e login que criaria outro usuario local devem ser bloqueados.
@@ -98,6 +100,7 @@ O app usa:
 - `data.avatar_url` do upload de avatar para foto de perfil remota
 
 Regra SaaS: o backend deve persistir o cliente principal no cadastro mesmo sem plano ativo. Esse cadastro precisa criar `user`, `tenant`, perfil inicial e um registro de cliente/assinatura em status `inactive` ou equivalente. Isso permite gerenciar no SaaS quem se cadastrou, qual `account_usage` foi escolhido e se a conta ja aderiu ou nao a algum plano. A falta de plano ativo bloqueia apenas sincronizacao em nuvem e recursos pagos, nao o cadastro da conta.
+O app atual exige sucesso em `POST /auth/register` para concluir o cadastro. Se a API estiver indisponivel ou retornar erro, a conta local nao e criada, para evitar cadastro apenas no aparelho sem registro no SaaS.
 
 Compatibilidade atual do app:
 
@@ -589,10 +592,10 @@ Valores suportados em `plan`:
 
 Nomes comerciais sugeridos para exibição:
 
-- `personal_monthly`: Essencial mensal.
-- `personal_annual`: Essencial anual.
-- `family_caregiver_monthly`: Cuidado Familiar mensal.
-- `family_caregiver_annual`: Cuidado Familiar anual.
+- `personal_monthly`: Pessoal mensal.
+- `personal_annual`: Pessoal anual.
+- `family_caregiver_monthly`: Familiar/acompanhante mensal.
+- `family_caregiver_annual`: Familiar/acompanhante anual.
 
 Valores sugeridos:
 
@@ -634,6 +637,87 @@ Quando o pagamento for confirmado pelo provedor, o backend deve marcar `sync_ena
 
 Observacao de status mobile: a tela de nuvem consulta `GET /billing/sync-access` e chama `POST /billing/sync-access/checkout` enviando `plan`. Ela exibe o Pix retornado pelo backend e espera o webhook atualizar o acesso ao sync.
 
+## Feedback do Usuário
+
+A home do app possui um card de opinião que abre um modal com nota em estrelas e comentário/sugestão. No mobile atual, o envio é apenas visual/local até existir endpoint no backend.
+
+Endpoint sugerido:
+
+```http
+POST /api/v1/feedback
+Authorization: Bearer <token>
+Accept: application/json
+Content-Type: application/json
+X-Tenant-Id: 1
+```
+
+Body:
+
+```json
+{
+  "rating": 5,
+  "comment": "Gostaria de uma tela para comparar evolução por mês.",
+  "source": "home",
+  "app_version": "1.0.0",
+  "platform": "android"
+}
+```
+
+Campos:
+
+- `rating`: inteiro opcional de 1 a 5. Pode ser `null` se o usuário enviar apenas comentário.
+- `comment`: texto opcional com comentário ou sugestão. Pode ser `null` se o usuário enviar apenas nota.
+- `source`: origem do feedback no app. Valor inicial esperado: `home`.
+- `app_version`: versão do app, quando disponível.
+- `platform`: plataforma do app, quando disponível (`ios`, `android` ou `web`).
+
+Regra de validação:
+
+- Exigir ao menos um entre `rating` e `comment`.
+- Se `rating` for enviado, aceitar apenas valores inteiros entre 1 e 5.
+- Vincular o feedback ao usuário autenticado e ao tenant atual.
+
+Response esperado:
+
+```json
+{
+  "data": {
+    "id": 123,
+    "rating": 5,
+    "comment": "Gostaria de uma tela para comparar evolução por mês.",
+    "source": "home",
+    "created_at": "2026-05-02T12:00:00Z"
+  },
+  "meta": {},
+  "message": "Feedback received."
+}
+```
+
+### Ajustes Necessários no Front
+
+Mobile:
+
+- Trocar o envio visual/local do modal de opinião por chamada real para `POST /api/v1/feedback`.
+- Enviar `Authorization`, `Accept`, `Content-Type` e, quando disponível, `X-Tenant-Id`.
+- Enviar `rating` quando o usuário selecionar estrelas e `comment` quando preencher comentário/sugestão.
+- Enviar `source: "home"` para o card atual da home.
+- Enviar `app_version` e `platform` quando esses dados estiverem disponíveis no app.
+- Bloquear o envio se `rating` e `comment` estiverem vazios.
+- Exibir estado de carregamento durante o envio.
+- Em sucesso, fechar o modal, limpar os campos e mostrar confirmação simples ao usuário.
+- Em erro de validação, informar que é necessário preencher uma nota ou comentário.
+- Em erro de rede ou servidor, manter o conteúdo digitado no modal para o usuário tentar novamente.
+- Não incluir feedback no fluxo de sincronização offline genérico. Feedback é envio online autenticado e vinculado ao tenant atual.
+
+Painel admin web:
+
+- Criar tela protegida para análise de feedbacks em `/admin/feedbacks`.
+- Exibir cards de resumo com total de feedbacks, nota média, quantidade com comentário e último envio.
+- Exibir distribuição por nota de 1 a 5 estrelas.
+- Listar feedbacks recentes com usuário, email, tenant, nota, comentário, origem, versão do app, plataforma e data de criação.
+- Adicionar navegação para Feedbacks no dashboard admin e nas telas administrativas relacionadas.
+- A tela deve ser somente para usuários admin/root e não deve ficar disponível para usuários comuns do app.
+
 ## SQLite Sync Readiness
 
 As tabelas locais sincronizaveis no SQLite sao:
@@ -667,7 +751,7 @@ Antes de puxar os registros clinicos, o app chama `GET /profiles` e faz upsert l
 ## Observações de Implementação
 
 - Login remoto é online-only.
-- Registro pode criar conta local mesmo sem API; nesse caso a sincronização fica pendente até autenticar/liberar a nuvem.
+- Registro exige API disponivel e resposta de sucesso para gravar o cliente no SaaS; o app nao cria mais conta local quando `POST /auth/register` falha.
 - Depois do login, o app opera offline-first com SQLite.
 - Quando o backend estiver disponível, o app tenta `sync/push` dos pendentes.
 - Em outro celular, o app faz login online e depois `sync/pull`.

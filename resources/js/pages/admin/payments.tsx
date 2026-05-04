@@ -51,6 +51,9 @@ const Payments: React.FC<Props> = ({ payments }) => {
                         <Link href="/admin" className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
                             Dashboard
                         </Link>
+                        <Link href="/admin/feedbacks" className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                            Feedbacks
+                        </Link>
                     </nav>
                 </header>
 
