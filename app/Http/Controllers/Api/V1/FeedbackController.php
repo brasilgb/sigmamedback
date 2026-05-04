@@ -26,6 +26,6 @@ class FeedbackController extends Controller
             'comment' => $feedback->comment,
             'source' => $feedback->source,
             'created_at' => $feedback->created_at,
-        ], 'Feedback received.', status: 201);
+        ], 'Feedback recebido.', status: 201);
     }
 }

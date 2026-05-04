@@ -26,6 +26,6 @@ class CreateAdminUser extends Command
             ]
         );
 
-        $this->info("Admin user {$email} created successfully.");
+        $this->info("Usuário admin {$email} criado com sucesso.");
     }
 }

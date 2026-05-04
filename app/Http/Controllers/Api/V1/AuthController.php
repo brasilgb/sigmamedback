@@ -65,7 +65,7 @@ class AuthController extends Controller
             'tenant' => $tenant,
             'profile' => $profile,
             'token' => $token,
-        ], 'Registration successful.');
+        ], 'Cadastro realizado com sucesso.');
     }
 
     public function login(LoginRequest $request)
@@ -75,7 +75,7 @@ class AuthController extends Controller
             'password' => $request->password,
             'is_admin' => false,
         ])) {
-            return $this->errorResponse('Invalid credentials.', 422);
+            return $this->errorResponse('Credenciais inválidas.', 422);
         }
 
         $user = Auth::user();
@@ -88,14 +88,14 @@ class AuthController extends Controller
             'token' => $token,
             'tenant' => $tenant,
             'profile' => $profile,
-        ], 'Login successful.');
+        ], 'Login realizado com sucesso.');
     }
 
     public function logout(Request $request)
     {
         $request->user()?->currentAccessToken()?->delete();
 
-        return $this->successResponse(null, 'Logged out successfully.');
+        return $this->successResponse(null, 'Logout realizado com sucesso.');
     }
 
     public function me(Request $request)
@@ -108,7 +108,7 @@ class AuthController extends Controller
             'user' => $user,
             'tenant' => $tenant,
             'profile' => $profile,
-        ], 'Authenticated user.');
+        ], 'Usuário autenticado.');
     }
 
     public function destroy(Request $request)
@@ -130,7 +130,7 @@ class AuthController extends Controller
 
         $user->delete();
 
-        return $this->successResponse([], 'Account deleted.');
+        return $this->successResponse([], 'Conta excluída.');
     }
 
     public function update(UpdateProfileRequest $request)
@@ -140,7 +140,7 @@ class AuthController extends Controller
         $user->fill($request->validated());
         $user->save();
 
-        return $this->successResponse($user, 'Profile updated.');
+        return $this->successResponse($user, 'Perfil atualizado.');
     }
 
     public function uploadAvatar(UploadAvatarRequest $request)
@@ -154,7 +154,7 @@ class AuthController extends Controller
         return $this->successResponse([
             'photo_path' => $path,
             'avatar_url' => Storage::disk('public')->url($path),
-        ], 'Avatar uploaded.');
+        ], 'Avatar enviado.');
     }
 
     public function destroyAvatar(Request $request)
@@ -167,7 +167,7 @@ class AuthController extends Controller
             $profile->save();
         }
 
-        return $this->successResponse(null, 'Avatar removed.');
+        return $this->successResponse(null, 'Avatar removido.');
     }
 
     protected function resolveProfile(Request $request): Profile

@@ -28,7 +28,7 @@ test('profile endpoint returns a valid profile for authenticated tenant', functi
     $response->assertOk();
     $response->assertJsonPath('data.tenant_id', $tenant->id);
     $response->assertJsonPath('data.user_id', $user->id);
-    $response->assertJsonPath('message', 'Profile loaded.');
+    $response->assertJsonPath('message', 'Perfil carregado.');
     $response->assertJsonStructure([
         'data' => [
             'id',
@@ -77,7 +77,7 @@ test('authenticated user can create accompanied profile with age', function () {
     $response->assertJsonPath('data.age', 68);
     $response->assertJsonPath('data.tenant_id', $tenant->id);
     $response->assertJsonPath('data.user_id', $user->id);
-    $response->assertJsonPath('message', 'Profile created.');
+    $response->assertJsonPath('message', 'Perfil criado.');
     $this->assertDatabaseHas('profiles', [
         'tenant_id' => $tenant->id,
         'user_id' => $user->id,

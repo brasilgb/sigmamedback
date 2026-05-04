@@ -32,7 +32,7 @@ class SyncController extends Controller
             'medication-logs' => $this->syncMedicationLogs($tenant, $userId, $items),
         };
 
-        return $this->syncResponse($results, ucfirst($resource).' push completed.');
+        return $this->syncResponse($results, $this->syncMessage($resource, 'push'));
     }
 
     public function pull(SyncPullRequest $request): JsonResponse
@@ -50,7 +50,7 @@ class SyncController extends Controller
             'medication-logs' => $this->pullResource(MedicationLog::class, $tenant->id, $userId, $since),
         };
 
-        return $this->syncResponse($items, ucfirst($resource).' pull completed.');
+        return $this->syncResponse($items, $this->syncMessage($resource, 'pull'));
     }
 
     protected function syncBloodPressure($tenant, int $userId, $items)
@@ -339,8 +339,26 @@ class SyncController extends Controller
             ->exists();
 
         if (! $exists) {
-            abort(422, "Invalid profile_id: {$profileId}");
+            abort(422, "profile_id inválido: {$profileId}");
         }
+    }
+
+    protected function syncMessage(string $resource, string $direction): string
+    {
+        $resourceNames = [
+            'blood-pressure' => 'pressão arterial',
+            'glicose' => 'glicose',
+            'weight' => 'peso',
+            'medications' => 'medicamentos',
+            'medication-logs' => 'registros de medicação',
+        ];
+
+        $actions = [
+            'push' => 'Envio',
+            'pull' => 'Recebimento',
+        ];
+
+        return "{$actions[$direction]} de {$resourceNames[$resource]} concluído.";
     }
 
     protected function syncResponse($data, string $message): JsonResponse

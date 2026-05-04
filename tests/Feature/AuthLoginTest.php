@@ -34,5 +34,5 @@ test('mobile login rejects root admin users', function () {
     ]);
 
     $response->assertUnprocessable();
-    $response->assertJsonPath('message', 'Invalid credentials.');
+    $response->assertJsonPath('message', 'Credenciais inválidas.');
 });

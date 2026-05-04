@@ -17,10 +17,10 @@ class EnsureUserIsAdmin
     {
         if (! $request->user() || ! $request->user()->is_admin) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Unauthorized.'], 403);
+                return response()->json(['message' => 'Não autorizado.'], 403);
             }
 
-            return redirect('/')->with('error', 'Unauthorized access.');
+            return redirect('/')->with('error', 'Acesso não autorizado.');
         }
 
         return $next($request);

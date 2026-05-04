@@ -93,7 +93,7 @@ class DashboardController extends Controller
             'sync_enabled' => ! $tenant->sync_enabled,
         ]);
 
-        return back()->with('success', 'Sync status updated.');
+        return back()->with('success', 'Status de sincronização atualizado.');
     }
 
     public function updateUser(Request $request, User $user)
@@ -115,7 +115,7 @@ class DashboardController extends Controller
 
         $user->update($data);
 
-        return back()->with('success', 'User updated.');
+        return back()->with('success', 'Usuário atualizado.');
     }
 
     public function deleteUser(User $user)

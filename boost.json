@@ -2,6 +2,7 @@
     "agents": [
         "codex"
     ],
+    "cloud": false,
     "guidelines": true,
     "mcp": true,
     "nightwatch_mcp": false,
@@ -10,6 +11,7 @@
         "laravel-best-practices",
         "wayfinder-development",
         "pest-testing",
+        "inertia-react-development",
         "tailwindcss-development"
     ]
 }

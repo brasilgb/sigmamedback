@@ -56,6 +56,6 @@ class MedicationSyncController extends Controller
             return $medication;
         });
 
-        return $this->successResponse($results, 'Medication sync completed.');
+        return $this->successResponse($results, 'Sincronização de medicamentos concluída.');
     }
 }

@@ -52,6 +52,6 @@ class GlicoseSyncController extends Controller
             return $reading;
         });
 
-        return $this->successResponse($results, 'Glicose sync completed.');
+        return $this->successResponse($results, 'Sincronização de glicose concluída.');
     }
 }

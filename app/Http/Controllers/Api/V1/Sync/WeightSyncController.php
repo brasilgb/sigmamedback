@@ -51,6 +51,6 @@ class WeightSyncController extends Controller
             return $reading;
         });
 
-        return $this->successResponse($results, 'Weight sync completed.');
+        return $this->successResponse($results, 'Sincronização de peso concluída.');
     }
 }

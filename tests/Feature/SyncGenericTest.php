@@ -31,7 +31,7 @@ test('sync push returns 403 when sync is not enabled', function () {
         ]);
 
     $response->assertStatus(403);
-    $response->assertJsonPath('message', 'Synchronization is not enabled for this account.');
+    $response->assertJsonPath('message', 'A sincronização não está habilitada para esta conta.');
 });
 
 test('sync push works when sync is enabled', function () {
@@ -74,7 +74,7 @@ test('sync push works when sync is enabled', function () {
 
     $response->assertOk();
     $response->assertJsonPath('success', true);
-    $response->assertJsonPath('message', 'Blood-pressure push completed.');
+    $response->assertJsonPath('message', 'Envio de pressão arterial concluído.');
     $this->assertDatabaseHas('blood_pressure_readings', [
         'uuid' => $uuid,
         'systolic' => 120,
@@ -230,7 +230,7 @@ test('sync pull returns only records from authenticated user profiles', function
 
     $response->assertOk();
     $response->assertJsonPath('success', true);
-    $response->assertJsonPath('message', 'Blood-pressure pull completed.');
+    $response->assertJsonPath('message', 'Recebimento de pressão arterial concluído.');
 
     expect($response->json('data'))->toHaveCount(1);
     expect($response->json('data.0.uuid'))->toBe($visibleUuid);

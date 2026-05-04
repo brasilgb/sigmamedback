@@ -21,7 +21,7 @@ class BillingController extends Controller
             'status' => $tenant->sync_enabled ? 'active' : 'inactive',
             'expires_at' => $tenant->sync_enabled ? now()->addMonth()->toIso8601String() : null,
             'provider' => 'mercado_pago',
-        ], 'Sync access loaded.');
+        ], 'Acesso à sincronização carregado.');
     }
 
     public function checkout(Request $request)
@@ -45,7 +45,7 @@ class BillingController extends Controller
         );
 
         if (! $mpResponse) {
-            return $this->errorResponse('Failed to create payment with Mercado Pago.', 500);
+            return $this->errorResponse('Não foi possível criar o pagamento no Mercado Pago.', 500);
         }
 
         $payment = Payment::create([
@@ -67,6 +67,6 @@ class BillingController extends Controller
             'qr_code' => $payment->qr_code,
             'qr_code_base64' => $payment->qr_code_base64,
             'expires_at' => $payment->expires_at->toIso8601String(),
-        ], 'Pix payment created.');
+        ], 'Pagamento Pix criado.');
     }
 }

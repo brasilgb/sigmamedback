@@ -52,6 +52,6 @@ class BloodPressureSyncController extends Controller
             return $reading;
         });
 
-        return $this->successResponse($results, 'Blood pressure sync completed.');
+        return $this->successResponse($results, 'Sincronização de pressão arterial concluída.');
     }
 }

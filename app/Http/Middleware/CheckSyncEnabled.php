@@ -16,7 +16,7 @@ class CheckSyncEnabled
         if ($tenant && ! $tenant->sync_enabled) {
             return response()->json([
                 'success' => false,
-                'message' => 'Synchronization is not enabled for this account.',
+                'message' => 'A sincronização não está habilitada para esta conta.',
             ], 403);
         }
 

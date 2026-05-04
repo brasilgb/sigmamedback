@@ -31,7 +31,7 @@ test('user can submit feedback', function () {
         ]);
 
     $response->assertCreated()
-        ->assertJsonPath('message', 'Feedback received.')
+        ->assertJsonPath('message', 'Feedback recebido.')
         ->assertJsonPath('data.rating', 5)
         ->assertJsonPath('data.source', 'home');
 

@@ -28,7 +28,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records or you are not an admin.',
+            'email' => 'As credenciais informadas não conferem com nossos registros ou você não é administrador.',
         ]);
     }
 

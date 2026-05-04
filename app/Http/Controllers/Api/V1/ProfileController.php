@@ -17,7 +17,7 @@ class ProfileController extends Controller
         $tenant = TenantContext::current();
         $profiles = $request->user()->profiles()->where('tenant_id', $tenant->id)->get();
 
-        return $this->successResponse($profiles, 'Profiles loaded.');
+        return $this->successResponse($profiles, 'Perfis carregados.');
     }
 
     public function store(StoreProfileRequest $request)
@@ -34,7 +34,7 @@ class ProfileController extends Controller
             'notes' => $request->notes,
         ]);
 
-        return $this->successResponse($profile, 'Profile created.', status: 201);
+        return $this->successResponse($profile, 'Perfil criado.', status: 201);
     }
 
     public function show(Request $request)
@@ -49,7 +49,7 @@ class ProfileController extends Controller
             'name' => $request->user()->name,
         ]);
 
-        return $this->successResponse($profile, 'Profile loaded.');
+        return $this->successResponse($profile, 'Perfil carregado.');
     }
 
     public function update(UpdateProfileRequest $request)
@@ -71,7 +71,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'data' => $profile,
-            'message' => 'Profile updated.',
+            'message' => 'Perfil atualizado.',
         ]);
     }
 }

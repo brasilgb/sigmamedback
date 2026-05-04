@@ -16,7 +16,7 @@ class EnsureTenantAccess
 
         if (! $user) {
             return response()->json([
-                'message' => 'Unauthenticated.',
+                'message' => 'Não autenticado.',
             ], 401);
         }
 
@@ -33,7 +33,7 @@ class EnsureTenantAccess
 
         if (! $tenant instanceof Tenant) {
             return response()->json([
-                'message' => 'Tenant not found or access denied.',
+                'message' => 'Conta não encontrada ou acesso negado.',
             ], 403);
         }
 

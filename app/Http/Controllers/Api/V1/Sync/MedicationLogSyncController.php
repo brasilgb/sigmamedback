@@ -59,6 +59,6 @@ class MedicationLogSyncController extends Controller
             return $log;
         });
 
-        return $this->successResponse($results, 'Medication log sync completed.');
+        return $this->successResponse($results, 'Sincronização de registros de medicação concluída.');
     }
 }
