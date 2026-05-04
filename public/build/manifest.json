@@ -1,0 +1,81 @@
+{
+  "_jsx-runtime-B2bRI0uv.js": {
+    "file": "assets/jsx-runtime-B2bRI0uv.js",
+    "name": "jsx-runtime",
+    "imports": [
+      "resources/js/app.tsx"
+    ]
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-DumNUZpB.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.tsx": {
+    "file": "assets/app-C0uVSkKD.js",
+    "name": "app",
+    "src": "resources/js/app.tsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/pages/admin/dashboard.tsx",
+      "resources/js/pages/admin/feedbacks.tsx",
+      "resources/js/pages/admin/login.tsx",
+      "resources/js/pages/admin/payments.tsx",
+      "resources/js/pages/welcome.tsx"
+    ]
+  },
+  "resources/js/pages/admin/dashboard.tsx": {
+    "file": "assets/dashboard-djpx-fcE.js",
+    "name": "dashboard",
+    "src": "resources/js/pages/admin/dashboard.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.tsx",
+      "_jsx-runtime-B2bRI0uv.js"
+    ]
+  },
+  "resources/js/pages/admin/feedbacks.tsx": {
+    "file": "assets/feedbacks-zEz1MYDn.js",
+    "name": "feedbacks",
+    "src": "resources/js/pages/admin/feedbacks.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.tsx",
+      "_jsx-runtime-B2bRI0uv.js"
+    ]
+  },
+  "resources/js/pages/admin/login.tsx": {
+    "file": "assets/login-Cy5ye-zD.js",
+    "name": "login",
+    "src": "resources/js/pages/admin/login.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.tsx",
+      "_jsx-runtime-B2bRI0uv.js"
+    ]
+  },
+  "resources/js/pages/admin/payments.tsx": {
+    "file": "assets/payments-DAeL1KJQ.js",
+    "name": "payments",
+    "src": "resources/js/pages/admin/payments.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.tsx",
+      "_jsx-runtime-B2bRI0uv.js"
+    ]
+  },
+  "resources/js/pages/welcome.tsx": {
+    "file": "assets/welcome-C13jl5Jb.js",
+    "name": "welcome",
+    "src": "resources/js/pages/welcome.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.tsx",
+      "_jsx-runtime-B2bRI0uv.js"
+    ]
+  }
+}
