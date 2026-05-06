@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Http\Controllers\Api\V1\Sync\Concerns\ValidatesSyncOwnership;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\SyncPullRequest;
 use App\Http\Requests\Api\V1\SyncPushRequest;
@@ -17,6 +18,8 @@ use Illuminate\Support\Carbon;
 
 class SyncController extends Controller
 {
+    use ValidatesSyncOwnership;
+
     public function push(SyncPushRequest $request): JsonResponse
     {
         $tenant = TenantContext::current();
@@ -56,7 +59,7 @@ class SyncController extends Controller
     protected function syncBloodPressure($tenant, int $userId, $items)
     {
         return $items->map(function (array $item) use ($tenant, $userId) {
-            $this->validateProfile($tenant, $userId, $item['profile_id']);
+            $this->ensureProfileBelongsToAuthenticatedUser($tenant->id, $userId, (int) $item['profile_id']);
 
             $reading = BloodPressureReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -106,7 +109,7 @@ class SyncController extends Controller
     protected function syncGlicose($tenant, int $userId, $items)
     {
         return $items->map(function (array $item) use ($tenant, $userId) {
-            $this->validateProfile($tenant, $userId, $item['profile_id']);
+            $this->ensureProfileBelongsToAuthenticatedUser($tenant->id, $userId, (int) $item['profile_id']);
 
             $reading = GlicoseReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -156,7 +159,7 @@ class SyncController extends Controller
     protected function syncWeight($tenant, int $userId, $items)
     {
         return $items->map(function (array $item) use ($tenant, $userId) {
-            $this->validateProfile($tenant, $userId, $item['profile_id']);
+            $this->ensureProfileBelongsToAuthenticatedUser($tenant->id, $userId, (int) $item['profile_id']);
 
             $reading = WeightReading::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -205,7 +208,7 @@ class SyncController extends Controller
     protected function syncMedications($tenant, int $userId, $items)
     {
         return $items->map(function (array $item) use ($tenant, $userId) {
-            $this->validateProfile($tenant, $userId, $item['profile_id']);
+            $this->ensureProfileBelongsToAuthenticatedUser($tenant->id, $userId, (int) $item['profile_id']);
 
             $medication = Medication::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -258,7 +261,8 @@ class SyncController extends Controller
     protected function syncMedicationLogs($tenant, int $userId, $items)
     {
         return $items->map(function (array $item) use ($tenant, $userId) {
-            $this->validateProfile($tenant, $userId, $item['profile_id']);
+            $profileId = (int) $item['profile_id'];
+            $this->ensureProfileBelongsToAuthenticatedUser($tenant->id, $userId, $profileId);
 
             $log = MedicationLog::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
@@ -272,20 +276,18 @@ class SyncController extends Controller
                 return $log;
             }
 
-            $medicationId = $item['medication_id'] ?? null;
-
-            if (! $medicationId && isset($item['medication_uuid'])) {
-                $medicationId = Medication::withoutGlobalScopes()
-                    ->where('tenant_id', $tenant->id)
-                    ->where('uuid', $item['medication_uuid'])
-                    ->value('id');
-            }
+            $medicationId = $this->resolveMedicationIdForLog(
+                tenantId: $tenant->id,
+                profileId: $profileId,
+                medicationId: $item['medication_id'] ?? null,
+                medicationUuid: $item['medication_uuid'] ?? null,
+            );
 
             if (! $log) {
                 $log = new MedicationLog([
                     'uuid' => $item['uuid'],
                     'tenant_id' => $tenant->id,
-                    'profile_id' => $item['profile_id'],
+                    'profile_id' => $profileId,
                     'medication_id' => $medicationId,
                 ]);
             }
@@ -329,18 +331,6 @@ class SyncController extends Controller
         }
 
         return $query->get();
-    }
-
-    protected function validateProfile($tenant, int $userId, $profileId)
-    {
-        $exists = Profile::where('tenant_id', $tenant->id)
-            ->where('user_id', $userId)
-            ->where('id', $profileId)
-            ->exists();
-
-        if (! $exists) {
-            abort(422, "profile_id inválido: {$profileId}");
-        }
     }
 
     protected function syncMessage(string $resource, string $direction): string

@@ -7,56 +7,21 @@ use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Requests\Api\V1\UploadAvatarRequest;
-use App\Models\Payment;
 use App\Models\Profile;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Services\UserAccountService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+    public function __construct(protected UserAccountService $userAccountService) {}
+
     public function register(RegisterRequest $request)
     {
-        $accountUsage = $request->input('account_usage');
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'age' => $request->input('age'),
-        ]);
-
-        $tenant = Tenant::create([
-            'uuid' => Str::uuid()->toString(),
-            'name' => $user->name,
-            'slug' => Str::slug($user->name) ?: Str::uuid()->toString(),
-            'owner_id' => $user->id,
-            'account_usage' => $accountUsage,
-        ]);
-
-        $tenant->users()->attach($user, ['role' => 'owner']);
-
-        $profile = Profile::create([
-            'uuid' => Str::uuid()->toString(),
-            'tenant_id' => $tenant->id,
-            'user_id' => $user->id,
-            'name' => $user->name,
-            'height' => $request->input('height'),
-            'notes' => $accountUsage === 'personal' ? 'Perfil pessoal' : ($accountUsage === 'family' ? 'Acompanhamento familiar' : 'Acompanhamento profissional'),
-        ]);
-
-        Payment::create([
-            'tenant_id' => $tenant->id,
-            'amount' => 0,
-            'status' => 'inactive',
-            'payment_method' => 'none',
-            'plan_type' => $accountUsage,
-        ]);
+        ['user' => $user, 'tenant' => $tenant, 'profile' => $profile] = $this->userAccountService->register($request->validated());
 
         $token = $user->createToken('mobile')->plainTextToken;
 
@@ -113,22 +78,7 @@ class AuthController extends Controller
 
     public function destroy(Request $request)
     {
-        $user = $request->user();
-
-        // Revoke all tokens
-        $user->tokens()->delete();
-
-        // Get tenants where the user is the owner
-        $tenants = $user->tenants()->wherePivot('role', 'owner')->get();
-
-        foreach ($tenants as $tenant) {
-            // Delete profiles and clinical data will be handled by the database if cascade is set,
-            // or we can manually delete them here.
-            // Since I don't see SoftDeletes on User/Tenant, we do a force delete.
-            $tenant->delete();
-        }
-
-        $user->delete();
+        $this->userAccountService->deleteAccount($request->user());
 
         return $this->successResponse([], 'Conta excluída.');
     }

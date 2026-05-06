@@ -4,10 +4,11 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class MercadoPagoService
 {
-    protected string $accessToken;
+    protected ?string $accessToken;
 
     protected string $baseUrl = 'https://api.mercadopago.com/v1';
 
@@ -16,10 +17,14 @@ class MercadoPagoService
         $this->accessToken = config('services.mercadopago.access_token');
     }
 
-    public function createPixPayment(float $amount, string $email, string $description)
+    public function createPixPayment(float $amount, string $email, string $description): ?array
     {
         try {
             $response = Http::withToken($this->accessToken)
+                ->withHeaders(['X-Idempotency-Key' => Str::uuid()->toString()])
+                ->connectTimeout(5)
+                ->timeout(15)
+                ->retry(2, 200)
                 ->post("{$this->baseUrl}/payments", [
                     'transaction_amount' => $amount,
                     'description' => $description,
@@ -40,7 +45,7 @@ class MercadoPagoService
             }
 
             return $response->json();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Mercado Pago Service Error', [
                 'message' => $e->getMessage(),
             ]);
@@ -49,11 +54,23 @@ class MercadoPagoService
         }
     }
 
-    public function getPayment(string $paymentId)
+    public function getPayment(string $paymentId): ?array
     {
-        $response = Http::withToken($this->accessToken)
-            ->get("{$this->baseUrl}/payments/{$paymentId}");
+        try {
+            $response = Http::withToken($this->accessToken)
+                ->connectTimeout(5)
+                ->timeout(15)
+                ->retry(2, 200)
+                ->get("{$this->baseUrl}/payments/{$paymentId}");
 
-        return $response->successful() ? $response->json() : null;
+            return $response->successful() ? $response->json() : null;
+        } catch (\Throwable $e) {
+            Log::error('Mercado Pago Payment Lookup Failed', [
+                'payment_id' => $paymentId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 }

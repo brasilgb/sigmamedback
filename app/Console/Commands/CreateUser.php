@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
+use App\Services\UserAccountService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\password;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
 class CreateUser extends Command
@@ -29,16 +29,14 @@ class CreateUser extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(UserAccountService $userAccountService): int
     {
-        // Solicita o Nome
         $name = text(
             label: 'Qual o nome do usuário?',
             placeholder: 'Ex: João Silva',
             required: true
         );
 
-        // Solicita o E-mail com validação
         $email = text(
             label: 'Qual o e-mail do usuário?',
             placeholder: 'exemplo@email.com',
@@ -46,32 +44,40 @@ class CreateUser extends Command
             validate: fn (string $value) => ! filter_var($value, FILTER_VALIDATE_EMAIL) ? 'E-mail inválido.' : null
         );
 
-        // Solicita a Senha
         $password = password(
             label: 'Defina uma senha para o usuário',
             required: true,
             validate: fn (string $value) => strlen($value) < 8 ? 'A senha deve ter pelo menos 8 caracteres.' : null
         );
 
-        // Pergunta se deve ser administrador
         $isAdmin = confirm(
             label: 'Este usuário será um administrador?',
             default: false
         );
 
-        // Cria ou atualiza o usuário
-        $user = User::updateOrCreate(
-            ['email' => $email],
-            [
-                'name' => $name,
-                'password' => Hash::make($password),
-                'is_admin' => $isAdmin,
-            ]
+        $accountUsage = $isAdmin ? 'personal' : select(
+            label: 'Qual será o tipo de conta?',
+            options: [
+                'personal' => 'Pessoal',
+                'family' => 'Familiar',
+                'professional' => 'Profissional',
+            ],
+            default: 'personal'
+        );
+
+        $userAccountService->createOrUpdateConsoleUser(
+            name: $name,
+            email: $email,
+            password: $password,
+            isAdmin: $isAdmin,
+            accountUsage: $accountUsage,
         );
 
         $this->info("\n✅ Usuário '{$name}' ({$email}) criado com sucesso!");
         if ($isAdmin) {
             $this->warn('⚠️  Atenção: Este usuário possui privilégios de administrador.');
+        } else {
+            $this->info('Conta, perfil e pagamento inicial foram criados ou conferidos.');
         }
 
         return self::SUCCESS;

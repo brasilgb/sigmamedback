@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Sync;
 
+use App\Http\Controllers\Api\V1\Sync\Concerns\ValidatesSyncOwnership;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\SyncMedicationRequest;
 use App\Models\Medication;
@@ -11,12 +12,17 @@ use Illuminate\Support\Carbon;
 
 class MedicationSyncController extends Controller
 {
+    use ValidatesSyncOwnership;
+
     public function sync(SyncMedicationRequest $request): JsonResponse
     {
         $tenant = TenantContext::current();
+        $userId = $request->user()->id;
         $items = collect($request->validated('items'));
 
-        $results = $items->map(function (array $item) use ($tenant) {
+        $results = $items->map(function (array $item) use ($tenant, $userId) {
+            $this->ensureProfileBelongsToAuthenticatedUser($tenant->id, $userId, (int) $item['profile_id']);
+
             $medication = Medication::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->id)
                 ->where('uuid', $item['uuid'])

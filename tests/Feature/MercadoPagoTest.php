@@ -56,6 +56,8 @@ test('checkout creates a pending payment in database', function () {
 });
 
 test('webhook approves payment and enables tenant sync', function () {
+    config(['services.mercadopago.webhook_secret' => null]);
+
     $user = User::factory()->create();
     $tenant = Tenant::create([
         'uuid' => Str::uuid()->toString(),
@@ -97,4 +99,19 @@ test('webhook approves payment and enables tenant sync', function () {
 
     expect($payment->status)->toBe('approved');
     expect($tenant->sync_enabled)->toBeTrue();
+});
+
+test('webhook rejects invalid signature when webhook secret is configured', function () {
+    config(['services.mercadopago.webhook_secret' => 'secret']);
+
+    $response = $this->withHeaders([
+        'x-signature' => 'ts='.now()->timestamp.',v1=invalid',
+        'x-request-id' => 'request-123',
+    ])->postJson('/api/v1/webhooks/mercadopago?data.id=987654321', [
+        'type' => 'payment',
+        'data' => ['id' => '987654321'],
+    ]);
+
+    $response->assertUnauthorized();
+    $response->assertJsonPath('message', 'Assinatura inválida.');
 });

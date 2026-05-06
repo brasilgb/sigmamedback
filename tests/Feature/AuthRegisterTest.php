@@ -88,3 +88,27 @@ test('user can register with six character password', function () {
     $response->assertOk();
     $response->assertJsonPath('data.user.email', 'joao6@exemplo.com');
 });
+
+test('users with the same name receive unique tenant slugs', function () {
+    $firstResponse = $this->postJson('/api/v1/auth/register', [
+        'name' => 'João Silva',
+        'email' => 'joao-slug-1@exemplo.com',
+        'password' => 'secret123',
+        'password_confirmation' => 'secret123',
+        'account_usage' => 'personal',
+    ]);
+
+    $secondResponse = $this->postJson('/api/v1/auth/register', [
+        'name' => 'João Silva',
+        'email' => 'joao-slug-2@exemplo.com',
+        'password' => 'secret123',
+        'password_confirmation' => 'secret123',
+        'account_usage' => 'personal',
+    ]);
+
+    $firstResponse->assertOk();
+    $secondResponse->assertOk();
+
+    expect($firstResponse->json('data.tenant.slug'))->toBe('joao-silva');
+    expect($secondResponse->json('data.tenant.slug'))->toBe('joao-silva-2');
+});

@@ -128,6 +128,47 @@ test('sync push validates profile_id belongs to tenant', function () {
     $response->assertStatus(422);
 });
 
+test('legacy sync validates profile_id belongs to authenticated user', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $tenant = Tenant::create([
+        'uuid' => Str::uuid()->toString(),
+        'name' => 'Tenant Test',
+        'slug' => 'tenant-test',
+        'owner_id' => $user->id,
+        'sync_enabled' => true,
+    ]);
+
+    $tenant->users()->attach($user->id, ['role' => 'owner']);
+    $tenant->users()->attach($otherUser->id, ['role' => 'member']);
+
+    $otherProfile = Profile::create([
+        'uuid' => Str::uuid()->toString(),
+        'tenant_id' => $tenant->id,
+        'user_id' => $otherUser->id,
+        'name' => 'Other User Profile',
+    ]);
+
+    Sanctum::actingAs($user, ['*']);
+
+    $response = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->postJson('/api/v1/blood-pressure/sync', [
+            'items' => [
+                [
+                    'uuid' => Str::uuid()->toString(),
+                    'profile_id' => $otherProfile->id,
+                    'systolic' => 120,
+                    'diastolic' => 80,
+                    'pulse' => 70,
+                    'source' => 'manual',
+                    'measured_at' => now()->toIso8601String(),
+                ],
+            ],
+        ]);
+
+    $response->assertUnprocessable();
+});
+
 test('sync push validates profile_id belongs to authenticated user', function () {
     $user = User::factory()->create();
     $otherUser = User::factory()->create();
