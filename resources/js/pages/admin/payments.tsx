@@ -26,11 +26,47 @@ interface Props {
 }
 
 const Payments: React.FC<Props> = ({ payments }) => {
+    const getPlanLabel = (planType: string) => {
+        switch (planType) {
+            case 'personal':
+            case 'personal_monthly':
+                return 'Pessoal mensal';
+            case 'personal_annual':
+                return 'Pessoal anual';
+            case 'family':
+            case 'family_caregiver_monthly':
+                return 'Familiar/Acompanhante mensal';
+            case 'family_caregiver_annual':
+                return 'Familiar/Acompanhante anual';
+            default:
+                return planType || 'Não informado';
+        }
+    };
+
+    const getStatusLabel = (status: string) => {
+        switch (status) {
+            case 'approved':
+                return 'Aprovado';
+            case 'pending':
+                return 'Pendente';
+            case 'rejected':
+                return 'Rejeitado';
+            case 'cancelled':
+                return 'Cancelado';
+            case 'inactive':
+                return 'Inativo';
+            default:
+                return status || 'Não informado';
+        }
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'approved': return 'bg-emerald-500/20 text-emerald-400';
             case 'pending': return 'bg-orange-500/20 text-orange-400';
             case 'rejected': return 'bg-red-500/20 text-red-400';
+            case 'cancelled': return 'bg-red-500/20 text-red-400';
+            case 'inactive': return 'bg-gray-700 text-gray-400';
             default: return 'bg-gray-700 text-gray-400';
         }
     };
@@ -76,11 +112,11 @@ const Payments: React.FC<Props> = ({ payments }) => {
                                         <div className="font-medium">{payment.tenant.owner.name}</div>
                                         <div className="text-xs text-gray-500">{payment.tenant.name}</div>
                                     </td>
-                                    <td className="px-6 py-4 capitalize">{payment.plan_type}</td>
+                                    <td className="px-6 py-4">{getPlanLabel(payment.plan_type)}</td>
                                     <td className="px-6 py-4 font-bold">R$ {parseFloat(payment.amount.toString()).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded-md text-xs font-bold ${getStatusColor(payment.status)}`}>
-                                            {payment.status.toUpperCase()}
+                                            {getStatusLabel(payment.status)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-xs font-mono text-gray-500">{payment.external_id}</td>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Services\MercadoPagoService;
 use App\Support\Tenancy\TenantContext;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BillingController extends Controller
@@ -28,15 +29,25 @@ class BillingController extends Controller
     {
         $tenant = TenantContext::current();
         $user = $request->user();
-        $planType = $request->input('plan', 'personal');
+        $planType = $request->input('plan', $tenant->account_usage === 'family' ? 'family_caregiver_monthly' : 'personal_monthly');
+        $plan = $this->planDetails($planType);
 
-        $amounts = [
-            'personal' => 9.90,
-            'family' => 19.90,
-        ];
+        $amount = $plan['amount'];
+        $description = 'Assinatura Meu Controle - Plano '.$plan['label'];
 
-        $amount = $amounts[$planType] ?? 9.90;
-        $description = 'Assinatura SigmaMed - Plano '.ucfirst($planType);
+        $payment = Payment::where('tenant_id', $tenant->id)
+            ->where('plan_type', $planType)
+            ->where('status', 'pending')
+            ->whereNotNull('external_id')
+            ->whereNotNull('qr_code')
+            ->whereNotNull('qr_code_base64')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if ($payment instanceof Payment) {
+            return $this->paymentResponse($payment, 'Pagamento Pix pendente carregado.');
+        }
 
         $mpResponse = $this->mercadoPagoService->createPixPayment(
             $amount,
@@ -59,6 +70,11 @@ class BillingController extends Controller
             'expires_at' => $mpResponse['date_of_expiration'],
         ]);
 
+        return $this->paymentResponse($payment, 'Pagamento Pix criado.');
+    }
+
+    protected function paymentResponse(Payment $payment, string $message): JsonResponse
+    {
         return $this->successResponse([
             'payment_id' => $payment->external_id,
             'status' => $payment->status,
@@ -67,6 +83,35 @@ class BillingController extends Controller
             'qr_code' => $payment->qr_code,
             'qr_code_base64' => $payment->qr_code_base64,
             'expires_at' => $payment->expires_at->toIso8601String(),
-        ], 'Pagamento Pix criado.');
+        ], $message);
+    }
+
+    /**
+     * @return array{amount: float, label: string}
+     */
+    protected function planDetails(string $planType): array
+    {
+        return match ($planType) {
+            'personal', 'personal_monthly' => [
+                'amount' => 9.90,
+                'label' => 'Pessoal',
+            ],
+            'personal_annual' => [
+                'amount' => 99.90,
+                'label' => 'Pessoal',
+            ],
+            'family', 'family_caregiver_monthly' => [
+                'amount' => 19.90,
+                'label' => 'Familiar/Acompanhante',
+            ],
+            'family_caregiver_annual' => [
+                'amount' => 199.90,
+                'label' => 'Familiar/Acompanhante',
+            ],
+            default => [
+                'amount' => 9.90,
+                'label' => 'Pessoal',
+            ],
+        };
     }
 }
