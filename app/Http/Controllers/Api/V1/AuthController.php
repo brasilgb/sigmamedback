@@ -80,7 +80,10 @@ class AuthController extends Controller
     {
         $this->userAccountService->deleteAccount($request->user());
 
-        return $this->successResponse([], 'Conta excluída.');
+        return $this->successResponse([
+            'deleted' => true,
+            'clear_local_data' => true,
+        ], 'Conta excluída.');
     }
 
     public function update(UpdateProfileRequest $request)

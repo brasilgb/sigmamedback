@@ -26,6 +26,8 @@ test('user can delete their account', function () {
 
     $response->assertOk();
     $response->assertJsonPath('message', 'Conta excluída.');
+    $response->assertJsonPath('data.deleted', true);
+    $response->assertJsonPath('data.clear_local_data', true);
 
     $this->assertDatabaseMissing('users', ['id' => $user->id]);
     $this->assertDatabaseMissing('tenants', ['id' => $tenant->id]);

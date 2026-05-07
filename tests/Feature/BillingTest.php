@@ -77,3 +77,12 @@ test('user can create checkout pix', function () {
         ],
     ]);
 });
+
+test('checkout returns localized unauthenticated response without token', function () {
+    $response = $this->postJson('/api/v1/billing/sync-access/checkout', [
+        'plan' => 'personal',
+    ]);
+
+    $response->assertUnauthorized();
+    $response->assertJsonPath('message', 'Não autenticado.');
+});

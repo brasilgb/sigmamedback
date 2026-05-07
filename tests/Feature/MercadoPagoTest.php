@@ -5,6 +5,8 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\MercadoPagoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Mockery\MockInterface;
@@ -53,6 +55,86 @@ test('checkout creates a pending payment in database', function () {
         'status' => 'pending',
         'amount' => 19.90,
     ]);
+});
+
+test('mercado pago service logs failed pix payment response', function () {
+    config(['services.mercadopago.access_token' => 'APP_USR-test-token']);
+
+    Http::fake([
+        'api.mercadopago.com/v1/payments' => Http::response([
+            'message' => 'Forbidden',
+            'error' => 'forbidden',
+        ], 403, [
+            'content-type' => 'application/json',
+            'x-request-id' => 'request-123',
+        ]),
+    ]);
+
+    Log::shouldReceive('error')
+        ->withArgs(function (string $message, array $context): bool {
+            expect($message)->toBe('Mercado Pago Payment Creation Failed');
+            expect($context['status'])->toBe(403);
+            expect($context['body'])->toBe([
+                'message' => 'Forbidden',
+                'error' => 'forbidden',
+            ]);
+            expect($context['raw_body'])->toBe('{"message":"Forbidden","error":"forbidden"}');
+            expect($context['content_type'])->toContain('application/json');
+            expect($context['x_request_id'])->toBe('request-123');
+
+            return true;
+        })
+        ->once();
+
+    $response = app(MercadoPagoService::class)->createPixPayment(
+        9.90,
+        'user@example.com',
+        'Assinatura SigmaMed - Plano Personal',
+    );
+
+    expect($response)->toBeNull();
+});
+
+test('mercado pago service does not send local notification url', function () {
+    config([
+        'app.url' => 'http://172.16.8.75:8000',
+        'services.mercadopago.access_token' => 'APP_USR-test-token',
+    ]);
+
+    Http::fake([
+        'api.mercadopago.com/v1/payments' => Http::response([
+            'id' => 123456789,
+        ]),
+    ]);
+
+    app(MercadoPagoService::class)->createPixPayment(
+        9.90,
+        'user@example.com',
+        'Assinatura SigmaMed - Plano Personal',
+    );
+
+    Http::assertSent(fn ($request) => ! array_key_exists('notification_url', $request->data()));
+});
+
+test('mercado pago service sends public https notification url', function () {
+    config([
+        'app.url' => 'https://api.sigmamed.com.br',
+        'services.mercadopago.access_token' => 'APP_USR-test-token',
+    ]);
+
+    Http::fake([
+        'api.mercadopago.com/v1/payments' => Http::response([
+            'id' => 123456789,
+        ]),
+    ]);
+
+    app(MercadoPagoService::class)->createPixPayment(
+        9.90,
+        'user@example.com',
+        'Assinatura SigmaMed - Plano Personal',
+    );
+
+    Http::assertSent(fn ($request) => ($request->data()['notification_url'] ?? null) === 'https://api.sigmamed.com.br/api/v1/webhooks/mercadopago');
 });
 
 test('webhook approves payment and enables tenant sync', function () {
