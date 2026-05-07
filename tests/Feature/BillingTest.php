@@ -33,6 +33,56 @@ test('user can check sync access status', function () {
     $response->assertJsonPath('data.status', 'active');
 });
 
+test('sync access refreshes approved pending pix payment', function () {
+    $user = User::factory()->create();
+    $tenant = Tenant::create([
+        'uuid' => Str::uuid()->toString(),
+        'name' => 'Tenant Test',
+        'slug' => 'tenant-test-refresh',
+        'owner_id' => $user->id,
+        'sync_enabled' => false,
+    ]);
+
+    $tenant->users()->attach($user->id, ['role' => 'owner']);
+
+    $payment = Payment::create([
+        'tenant_id' => $tenant->id,
+        'external_id' => 'approved-pix-id',
+        'amount' => 9.90,
+        'status' => 'pending',
+        'plan_type' => 'personal_monthly',
+        'qr_code' => 'qr-code',
+        'qr_code_base64' => 'qr-code-base64',
+        'expires_at' => now()->addMinutes(10),
+    ]);
+
+    $this->mock(MercadoPagoService::class, function (MockInterface $mock) {
+        $mock->shouldReceive('getPayment')
+            ->with('approved-pix-id')
+            ->once()
+            ->andReturn([
+                'id' => 'approved-pix-id',
+                'status' => 'approved',
+            ]);
+    });
+
+    Sanctum::actingAs($user, ['*']);
+
+    $response = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->getJson('/api/v1/billing/sync-access');
+
+    $response->assertOk();
+    $response->assertJsonPath('data.sync_enabled', true);
+    $response->assertJsonPath('data.status', 'active');
+
+    $payment->refresh();
+    $tenant->refresh();
+
+    expect($payment->status)->toBe('approved');
+    expect($payment->paid_at)->not->toBeNull();
+    expect($tenant->sync_enabled)->toBeTrue();
+});
+
 test('user can create checkout pix', function () {
     $user = User::factory()->create();
     $tenant = Tenant::create([

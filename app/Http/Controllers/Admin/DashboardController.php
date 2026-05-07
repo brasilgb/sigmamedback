@@ -7,11 +7,14 @@ use App\Models\Feedback;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\PaymentStatusService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    public function __construct(protected PaymentStatusService $paymentStatusService) {}
+
     public function index()
     {
         $stats = [
@@ -53,6 +56,8 @@ class DashboardController extends Controller
 
     public function payments()
     {
+        $this->paymentStatusService->refreshRecentPending();
+
         $payments = Payment::with('tenant.owner')
             ->latest()
             ->paginate(20);

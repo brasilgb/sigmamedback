@@ -5,17 +5,24 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Services\MercadoPagoService;
+use App\Services\PaymentStatusService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BillingController extends Controller
 {
-    public function __construct(protected MercadoPagoService $mercadoPagoService) {}
+    public function __construct(
+        protected MercadoPagoService $mercadoPagoService,
+        protected PaymentStatusService $paymentStatusService,
+    ) {}
 
     public function syncAccess(Request $request)
     {
         $tenant = TenantContext::current();
+
+        $this->paymentStatusService->refreshPendingForTenant($tenant->id);
+        $tenant->refresh();
 
         return $this->successResponse([
             'sync_enabled' => $tenant->sync_enabled,

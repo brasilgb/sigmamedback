@@ -5,13 +5,17 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Services\MercadoPagoService;
+use App\Services\PaymentStatusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class WebhookController extends Controller
 {
-    public function __construct(protected MercadoPagoService $mercadoPagoService) {}
+    public function __construct(
+        protected MercadoPagoService $mercadoPagoService,
+        protected PaymentStatusService $paymentStatusService,
+    ) {}
 
     public function mercadopago(Request $request)
     {
@@ -59,23 +63,7 @@ class WebhookController extends Controller
             return;
         }
 
-        $status = $mpPayment['status'];
-
-        if ($status === 'approved' && $payment->status !== 'approved') {
-            $payment->update([
-                'status' => 'approved',
-                'paid_at' => now(),
-            ]);
-
-            $payment->tenant->update(['sync_enabled' => true]);
-
-            Log::info('Payment approved and sync enabled', [
-                'payment_id' => $payment->id,
-                'tenant_id' => $payment->tenant_id,
-            ]);
-        } else {
-            $payment->update(['status' => $status]);
-        }
+        $this->paymentStatusService->applyMercadoPagoStatus($payment, $mpPayment);
     }
 
     protected function hasValidSignature(Request $request, string $dataId): bool
