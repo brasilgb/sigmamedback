@@ -84,7 +84,8 @@ class BillingController extends Controller
     {
         return $this->successResponse([
             'payment_id' => $payment->external_id,
-            'status' => $payment->status,
+            'status' => $payment->display_status,
+            'raw_status' => $payment->status,
             'amount' => $payment->amount,
             'currency' => $payment->currency,
             'qr_code' => $payment->qr_code,

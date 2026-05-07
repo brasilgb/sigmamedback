@@ -9,6 +9,10 @@ class Payment extends Model
 {
     use HasFactory;
 
+    protected $appends = [
+        'display_status',
+    ];
+
     protected $fillable = [
         'tenant_id',
         'external_id',
@@ -32,5 +36,18 @@ class Payment extends Model
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function getDisplayStatusAttribute(): string
+    {
+        if (
+            $this->status === 'pending'
+            && $this->expires_at
+            && $this->expires_at->isPast()
+        ) {
+            return 'expired';
+        }
+
+        return $this->status;
     }
 }

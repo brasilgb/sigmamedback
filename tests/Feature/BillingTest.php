@@ -214,6 +214,28 @@ test('checkout reuses pending unexpired pix payment for same plan', function () 
     expect(Payment::where('tenant_id', $tenant->id)->count())->toBe(1);
 });
 
+test('payment exposes expired display status when pending pix is expired', function () {
+    $payment = Payment::create([
+        'tenant_id' => Tenant::create([
+            'uuid' => Str::uuid()->toString(),
+            'name' => 'Tenant Test',
+            'slug' => 'tenant-test-display-expired',
+            'owner_id' => User::factory()->create()->id,
+        ])->id,
+        'external_id' => 'expired-pix-id',
+        'amount' => 9.90,
+        'status' => 'pending',
+        'plan_type' => 'personal_monthly',
+        'qr_code' => 'expired-qr-code',
+        'qr_code_base64' => 'expired-qr-code-base64',
+        'expires_at' => now()->subMinute(),
+    ]);
+
+    expect($payment->status)->toBe('pending');
+    expect($payment->display_status)->toBe('expired');
+    expect($payment->toArray()['display_status'])->toBe('expired');
+});
+
 test('checkout creates new pix when pending payment is expired', function () {
     $user = User::factory()->create();
     $tenant = Tenant::create([

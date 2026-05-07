@@ -6,8 +6,10 @@ interface Payment {
     external_id: string;
     amount: number;
     status: string;
+    display_status: string;
     plan_type: string;
     created_at: string;
+    expires_at: string | null;
     paid_at: string | null;
     tenant: {
         name: string;
@@ -53,6 +55,8 @@ const Payments: React.FC<Props> = ({ payments }) => {
                 return 'Rejeitado';
             case 'cancelled':
                 return 'Cancelado';
+            case 'expired':
+                return 'Expirado';
             case 'inactive':
                 return 'Inativo';
             default:
@@ -66,6 +70,7 @@ const Payments: React.FC<Props> = ({ payments }) => {
             case 'pending': return 'bg-orange-500/20 text-orange-400';
             case 'rejected': return 'bg-red-500/20 text-red-400';
             case 'cancelled': return 'bg-red-500/20 text-red-400';
+            case 'expired': return 'bg-gray-700 text-gray-300';
             case 'inactive': return 'bg-gray-700 text-gray-400';
             default: return 'bg-gray-700 text-gray-400';
         }
@@ -106,7 +111,10 @@ const Payments: React.FC<Props> = ({ payments }) => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
-                            {payments.data.map(payment => (
+                            {payments.data.map(payment => {
+                                const displayStatus = payment.display_status || payment.status;
+
+                                return (
                                 <tr key={payment.id} className="hover:bg-gray-700/30 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="font-medium">{payment.tenant.owner.name}</div>
@@ -115,8 +123,8 @@ const Payments: React.FC<Props> = ({ payments }) => {
                                     <td className="px-6 py-4">{getPlanLabel(payment.plan_type)}</td>
                                     <td className="px-6 py-4 font-bold">R$ {parseFloat(payment.amount.toString()).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-md text-xs font-bold ${getStatusColor(payment.status)}`}>
-                                            {getStatusLabel(payment.status)}
+                                        <span className={`px-2 py-1 rounded-md text-xs font-bold ${getStatusColor(displayStatus)}`}>
+                                            {getStatusLabel(displayStatus)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-xs font-mono text-gray-500">{payment.external_id}</td>
@@ -124,7 +132,8 @@ const Payments: React.FC<Props> = ({ payments }) => {
                                         {new Date(payment.created_at).toLocaleString('pt-BR')}
                                     </td>
                                 </tr>
-                            ))}
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
