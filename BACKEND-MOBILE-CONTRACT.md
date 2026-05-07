@@ -132,7 +132,10 @@ Response esperado:
 
 ```json
 {
-  "data": {},
+  "data": {
+    "deleted": true,
+    "clear_local_data": true
+  },
   "meta": {},
   "message": "Conta excluída."
 }
@@ -536,7 +539,7 @@ Valores aceitos em `resource`:
 
 ## Assinatura e Sincronização na Nuvem
 
-O app pode funcionar apenas localmente. A sincronização com a nuvem deve ser liberada pelo backend somente para contas com assinatura ativa.
+O app pode funcionar apenas localmente. A sincronização com a nuvem deve ser liberada pelo backend somente para contas com `sync_enabled = true`.
 
 Status da assinatura/sync:
 
@@ -564,6 +567,13 @@ Response esperado:
   "message": "Acesso à sincronização carregado."
 }
 ```
+
+Regra de status do sync: `status` reflete somente `tenant.sync_enabled`.
+
+- `active`: sync na nuvem liberado.
+- `inactive`: sync na nuvem nao liberado.
+
+`expires_at` nessa resposta deve ser `null`. O tenant/acesso local nao expira por data; a conta e gratuita sem nuvem ou tem sync habilitado. O app nao deve exibir popup de "plano expirado" com base em `GET /billing/sync-access`.
 
 Criar cobrança Pix:
 
@@ -616,6 +626,7 @@ Response esperado:
   "data": {
     "payment_id": "123456789",
     "status": "pending",
+    "raw_status": "pending",
     "plan": "family_caregiver_monthly",
     "amount": 19.9,
     "currency": "BRL",
@@ -629,13 +640,33 @@ Response esperado:
 }
 ```
 
-Quando o checkout Pix for criado, o backend deve registrar a tentativa de pagamento vinculada ao tenant/cliente, com `plan`, `cycle`, `provider`, `payment_id`, `amount`, `status = pending` e vencimento do Pix.
+`status` no retorno do checkout e o status de exibicao do Pix/pagamento. Valores esperados:
 
-Quando o pagamento for aprovado pelo Mercado Pago ou outro provedor via webhook, o backend ativa `sync_enabled = true`, preenche `paid_at`, define `plan`, `cycle`, `expires_at` e atualiza o status da assinatura para `active`.
+- `pending`: Pix pendente e ainda dentro do vencimento.
+- `expired`: Pix pendente com `expires_at` vencido.
+- `approved`: pagamento aprovado.
+- `rejected`: pagamento rejeitado.
+- `cancelled`: pagamento cancelado.
+- `inactive`: pagamento/assinatura inicial inativa.
+
+`raw_status` e o status persistido pelo backend/provedor. Exemplo: um Pix vencido pode retornar `status = expired` e `raw_status = pending`.
+
+`expires_at` no checkout representa apenas o vencimento do QR Code Pix. Nao representa vencimento do tenant nem vencimento do acesso local.
+
+Quando o checkout Pix for criado, o backend deve registrar a tentativa de pagamento vinculada ao tenant/cliente, com `plan_type`, `payment_id`, `amount`, `status = pending` e vencimento do Pix em `expires_at`.
+
+Se ja existir um Pix `pending` para o mesmo plano, com `expires_at` futuro e QR Code salvo, o backend deve reutilizar esse pagamento e retornar o mesmo QR Code em vez de criar outra cobranca no Mercado Pago. Se o Pix estiver vencido, aprovado, rejeitado, cancelado ou for de outro plano, o backend pode criar uma nova cobranca.
+
+Descricao enviada ao Mercado Pago:
+
+- Planos pessoais: `Assinatura Meu Controle - Plano Pessoal`.
+- Planos familiares/cuidador: `Assinatura Meu Controle - Plano Familiar/Acompanhante`.
+
+Quando o pagamento for aprovado pelo Mercado Pago ou outro provedor, o backend ativa `sync_enabled = true`, preenche `paid_at` no pagamento e atualiza o status do pagamento para `approved`. Essa atualizacao pode ocorrer via webhook ou por reconciliacao quando o app consultar `GET /billing/sync-access` ou quando o admin abrir a tela de pagamentos.
 
 Quando o pagamento for confirmado pelo provedor, o backend deve marcar `sync_enabled = true` para o tenant/usuário autenticado. Enquanto `sync_enabled` for `false`, endpoints de `sync/push` e `sync/pull` devem retornar erro claro de acesso não liberado.
 
-Observacao de status mobile: a tela de nuvem consulta `GET /billing/sync-access` e chama `POST /billing/sync-access/checkout` enviando `plan`. Ela exibe o Pix retornado pelo backend e espera o webhook atualizar o acesso ao sync.
+Observacao de status mobile: a tela de nuvem consulta `GET /billing/sync-access` para decidir se a nuvem esta ativa/inativa. Ela chama `POST /billing/sync-access/checkout` enviando `plan` para exibir Pix e status de pagamento. O app deve tratar `status = expired` no retorno do checkout como Pix vencido e oferecer gerar/reabrir nova cobranca, mas nao como plano/tenant expirado.
 
 ## Feedback do Usuário
 

@@ -27,7 +27,7 @@ class BillingController extends Controller
         return $this->successResponse([
             'sync_enabled' => $tenant->sync_enabled,
             'status' => $tenant->sync_enabled ? 'active' : 'inactive',
-            'expires_at' => $tenant->sync_enabled ? now()->addMonth()->toIso8601String() : null,
+            'expires_at' => null,
             'provider' => 'mercado_pago',
         ], 'Acesso à sincronização carregado.');
     }

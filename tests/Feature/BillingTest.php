@@ -31,6 +31,7 @@ test('user can check sync access status', function () {
     $response->assertOk();
     $response->assertJsonPath('data.sync_enabled', true);
     $response->assertJsonPath('data.status', 'active');
+    $response->assertJsonPath('data.expires_at', null);
 });
 
 test('sync access refreshes approved pending pix payment', function () {
@@ -74,6 +75,7 @@ test('sync access refreshes approved pending pix payment', function () {
     $response->assertOk();
     $response->assertJsonPath('data.sync_enabled', true);
     $response->assertJsonPath('data.status', 'active');
+    $response->assertJsonPath('data.expires_at', null);
 
     $payment->refresh();
     $tenant->refresh();
