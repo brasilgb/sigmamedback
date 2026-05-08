@@ -13,53 +13,75 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6 font-sans">
+        <div className="flex min-h-screen items-center justify-center bg-gray-900 p-6 font-sans">
             <Head title="Admin Login - SigmaMed" />
-            
-            <div className="w-full max-w-md bg-gray-800 border border-gray-700 rounded-3xl p-10 shadow-2xl">
-                <div className="text-center mb-10">
-                    <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+
+            <div className="w-full max-w-md rounded-3xl border border-gray-700 bg-gray-800 p-10 shadow-2xl">
+                <div className="mb-10 text-center">
+                    <img
+                        src="/images/logo_branco.png"
+                        alt="SigmaMed"
+                        className="mx-auto mb-6 h-16 w-auto"
+                    />
+                    <h1 className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-3xl font-extrabold text-transparent">
                         SigmaMed Root
                     </h1>
-                    <p className="text-gray-400 mt-2">Acesso restrito ao administrador</p>
+                    <p className="mt-2 text-gray-400">
+                        Acesso restrito ao administrador
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm text-gray-400 mb-2">E-mail</label>
-                        <input 
-                            type="email" 
-                            className="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        <label className="mb-2 block text-sm text-gray-400">
+                            E-mail
+                        </label>
+                        <input
+                            type="email"
+                            className="w-full rounded-xl border border-gray-700 bg-gray-900 p-4 transition-all outline-none focus:ring-2 focus:ring-blue-500"
                             value={data.email}
-                            onChange={e => setData('email', e.target.value)}
+                            onChange={(e) => setData('email', e.target.value)}
                             placeholder="admin@sigmamed.com"
                         />
-                        {errors.email && <p className="text-red-400 text-xs mt-2">{errors.email}</p>}
+                        {errors.email && (
+                            <p className="mt-2 text-xs text-red-400">
+                                {errors.email}
+                            </p>
+                        )}
                     </div>
                     <div>
-                        <label className="block text-sm text-gray-400 mb-2">Senha</label>
-                        <input 
-                            type="password" 
-                            className="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        <label className="mb-2 block text-sm text-gray-400">
+                            Senha
+                        </label>
+                        <input
+                            type="password"
+                            className="w-full rounded-xl border border-gray-700 bg-gray-900 p-4 transition-all outline-none focus:ring-2 focus:ring-blue-500"
                             value={data.password}
-                            onChange={e => setData('password', e.target.value)}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                             placeholder="••••••••"
                         />
-                        {errors.password && <p className="text-red-400 text-xs mt-2">{errors.password}</p>}
+                        {errors.password && (
+                            <p className="mt-2 text-xs text-red-400">
+                                {errors.password}
+                            </p>
+                        )}
                     </div>
 
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={processing}
-                        className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 disabled:opacity-50 py-4 rounded-xl font-bold text-white shadow-lg shadow-blue-900/20 transition-all transform hover:scale-[1.02]"
+                        className="w-full transform rounded-xl bg-gradient-to-r from-blue-600 to-emerald-600 py-4 font-bold text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-[1.02] hover:from-blue-500 hover:to-emerald-500 disabled:opacity-50"
                     >
                         {processing ? 'Autenticando...' : 'Entrar no Painel'}
                     </button>
                 </form>
-                
+
                 <div className="mt-8 text-center">
-                    <p className="text-gray-500 text-xs">
-                        &copy; {new Date().getFullYear()} SigmaMed - Sistema de Gestão Root
+                    <p className="text-xs text-gray-500">
+                        &copy; {new Date().getFullYear()} SigmaMed - Sistema de
+                        Gestão Root
                     </p>
                 </div>
             </div>

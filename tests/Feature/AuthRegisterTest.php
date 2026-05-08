@@ -12,11 +12,19 @@ test('user can register with personal account usage', function () {
         'password_confirmation' => 'secret123',
         'account_usage' => 'personal',
         'age' => 35,
+        'birth_date' => '1991-05-20',
+        'sex' => 'male',
         'height' => 170,
     ]);
 
     $response->assertOk();
     $response->assertJsonPath('data.user.name', 'João Silva');
+    $response->assertJsonPath('data.profile.name', 'João Silva');
+    $response->assertJsonPath('data.profile.age', 35);
+    $response->assertJsonPath('data.profile.birth_date', '1991-05-20T00:00:00.000000Z');
+    $response->assertJsonPath('data.profile.sex', 'male');
+    $response->assertJsonPath('data.profile.height', 170);
+    $response->assertJsonPath('data.profile_id', $response->json('data.profile.id'));
     $response->assertJsonStructure(['data' => ['user', 'tenant', 'profile', 'token']]);
     $this->assertDatabaseHas('users', [
         'name' => 'João Silva',
@@ -26,6 +34,9 @@ test('user can register with personal account usage', function () {
     ]);
     $this->assertDatabaseHas('profiles', [
         'name' => 'João Silva',
+        'age' => 35,
+        'birth_date' => '1991-05-20',
+        'sex' => 'male',
         'height' => 170,
         'notes' => 'Perfil pessoal',
     ]);

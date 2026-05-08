@@ -29,6 +29,7 @@ class AuthController extends Controller
             'user' => $user,
             'tenant' => $tenant,
             'profile' => $profile,
+            'profile_id' => $profile->id,
             'token' => $token,
         ], 'Cadastro realizado com sucesso.');
     }
@@ -53,6 +54,7 @@ class AuthController extends Controller
             'token' => $token,
             'tenant' => $tenant,
             'profile' => $profile,
+            'profile_id' => $profile?->id,
         ], 'Login realizado com sucesso.');
     }
 
@@ -73,6 +75,7 @@ class AuthController extends Controller
             'user' => $user,
             'tenant' => $tenant,
             'profile' => $profile,
+            'profile_id' => $profile?->id,
         ], 'Usuário autenticado.');
     }
 

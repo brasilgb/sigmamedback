@@ -45,6 +45,8 @@ Payload de registro esperado:
   "name": "João Silva",
   "email": "joao@exemplo.com",
   "age": 35,
+  "birth_date": "1991-05-20",
+  "sex": "male",
   "height": 170,
   "password": "123456",
   "password_confirmation": "123456"

@@ -54,9 +54,14 @@ export default function PrivacyPolicy() {
                     <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
                         <Link
                             href={home.url()}
-                            className="text-lg font-extrabold tracking-tight text-white"
+                            className="flex items-center gap-3 text-lg font-extrabold tracking-tight text-white"
                         >
-                            Meu Controle
+                            <img
+                                src="/images/logo_branco.png"
+                                alt="Meu Controle"
+                                className="h-9 w-auto"
+                            />
+                            <span>Meu Controle</span>
                         </Link>
                         <Link
                             href={home.url()}

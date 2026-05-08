@@ -43,9 +43,14 @@ export default function Welcome() {
                             <nav className="flex items-center justify-between gap-4 text-sm">
                                 <Link
                                     href={home.url()}
-                                    className="text-lg font-extrabold tracking-tight text-white"
+                                    className="flex items-center gap-3 text-lg font-extrabold tracking-tight text-white"
                                 >
-                                    Meu Controle
+                                    <img
+                                        src="/images/logo_branco.png"
+                                        alt="Meu Controle"
+                                        className="h-9 w-auto"
+                                    />
+                                    <span>Meu Controle</span>
                                 </Link>
                                 <Link
                                     href={privacyPolicy.url()}

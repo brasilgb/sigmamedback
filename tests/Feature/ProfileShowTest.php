@@ -60,6 +60,7 @@ test('authenticated user can create accompanied profile with age', function () {
         'name' => 'Tenant Test',
         'slug' => 'tenant-test',
         'owner_id' => $user->id,
+        'sync_enabled' => false,
     ]);
 
     $tenant->users()->attach($user->id, ['role' => 'owner']);

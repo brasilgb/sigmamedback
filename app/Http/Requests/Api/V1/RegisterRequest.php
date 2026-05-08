@@ -18,6 +18,8 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
             'age' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:120'],
+            'birth_date' => ['sometimes', 'nullable', 'date'],
+            'sex' => ['sometimes', 'nullable', 'string', 'max:20'],
             'height' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:300'],
             'account_usage' => ['required', 'string', 'in:personal,family,professional'],
             'patient_name' => ['sometimes', 'nullable', 'string', 'max:255'],

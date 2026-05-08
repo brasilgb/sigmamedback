@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class UserAccountService
 {
     /**
-     * @param  array{name: string, email: string, password: string, age?: int|null, height?: float|int|null, account_usage: string}  $attributes
+     * @param  array{name: string, email: string, password: string, age?: int|null, birth_date?: string|null, sex?: string|null, height?: float|int|null, account_usage: string}  $attributes
      * @return array{user: User, tenant: Tenant, profile: Profile}
      */
     public function register(array $attributes): array
@@ -29,6 +29,9 @@ class UserAccountService
             $account = $this->ensureAccountForUser(
                 user: $user,
                 accountUsage: $attributes['account_usage'],
+                age: $attributes['age'] ?? null,
+                birthDate: $attributes['birth_date'] ?? null,
+                sex: $attributes['sex'] ?? null,
                 height: $attributes['height'] ?? null,
             );
 
@@ -82,8 +85,14 @@ class UserAccountService
     /**
      * @return array{tenant: Tenant, profile: Profile}
      */
-    public function ensureAccountForUser(User $user, string $accountUsage = 'personal', float|int|null $height = null): array
-    {
+    public function ensureAccountForUser(
+        User $user,
+        string $accountUsage = 'personal',
+        ?int $age = null,
+        ?string $birthDate = null,
+        ?string $sex = null,
+        float|int|null $height = null,
+    ): array {
         $tenant = $user->tenants()->first();
 
         if (! $tenant instanceof Tenant) {
@@ -104,8 +113,9 @@ class UserAccountService
         ], [
             'uuid' => Str::uuid()->toString(),
             'name' => $user->name,
-            'birth_date' => null,
-            'sex' => null,
+            'age' => $age,
+            'birth_date' => $birthDate,
+            'sex' => $sex,
             'height' => $height,
             'notes' => $this->profileNotes($accountUsage),
         ]);
