@@ -3,27 +3,27 @@ import { home, privacyPolicy } from '@/routes';
 
 const features = [
     {
-        title: 'Registros de saude em um so lugar',
+        title: 'Registros de saúde em um só lugar',
         description:
-            'Acompanhe glicose, pressao arterial, peso, medicamentos e historico de uso no mesmo fluxo.',
+            'Acompanhe glicose, pressão arterial, peso, medicamentos e histórico de uso no mesmo fluxo.',
     },
     {
         title: 'Perfis para rotina pessoal ou familiar',
         description:
-            'Organize informacoes de quem usa o app e mantenha o cuidado mais claro para cada perfil.',
+            'Organize informações de quem usa o app e mantenha o cuidado mais claro para cada perfil.',
     },
     {
-        title: 'Sincronizacao quando precisar',
+        title: 'Sincronização quando precisar',
         description:
-            'Tenha seus dados importantes preservados na conta e prontos para restauracao entre dispositivos.',
+            'Tenha seus dados importantes preservados na conta e prontos para restauração entre dispositivos.',
     },
 ];
 
 const metrics = [
     ['Glicose', 'mg/dL'],
-    ['Pressao', 'mmHg'],
+    ['Pressão', 'mmHg'],
     ['Peso', 'kg'],
-    ['Remedios', 'horarios'],
+    ['Remédios', 'horários'],
 ];
 
 export default function Welcome() {
@@ -32,7 +32,7 @@ export default function Welcome() {
             <Head title="Meu Controle">
                 <meta
                     name="description"
-                    content="Meu Controle ajuda voce a acompanhar indicadores de saude, medicamentos e perfis familiares com uma rotina simples e organizada."
+                    content="Meu Controle ajuda você a acompanhar indicadores de saúde, medicamentos e perfis familiares com uma rotina simples e organizada."
                 />
             </Head>
 
@@ -57,16 +57,16 @@ export default function Welcome() {
 
                             <div className="max-w-3xl">
                                 <p className="mb-4 text-sm font-bold tracking-[0.22em] text-emerald-300 uppercase">
-                                    Saude diaria sem complicar
+                                    Saúde diária sem complicar
                                 </p>
                                 <h1 className="text-5xl leading-[1.02] font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
                                     Meu Controle
                                 </h1>
                                 <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-300 sm:text-xl">
-                                    Um app para registrar indicadores de saude,
+                                    Um app para registrar indicadores de saúde,
                                     acompanhar medicamentos e manter a rotina de
-                                    cuidado mais organizada para voce ou sua
-                                    familia.
+                                    cuidado mais organizada para você ou sua
+                                    família.
                                 </p>
                             </div>
 
@@ -81,7 +81,7 @@ export default function Welcome() {
                                     href={privacyPolicy.url()}
                                     className="rounded-md border border-blue-300/40 px-5 py-3 text-center font-bold text-blue-100 transition hover:border-blue-200 hover:bg-blue-400/10"
                                 >
-                                    Politica de privacidade
+                                    Política de privacidade
                                 </Link>
                             </div>
                         </div>
@@ -130,7 +130,7 @@ export default function Welcome() {
 
                                     <div className="mt-5 rounded-lg border border-blue-400/20 bg-blue-400/10 p-4">
                                         <p className="text-sm font-bold text-blue-100">
-                                            Proximo medicamento
+                                            Próximo medicamento
                                         </p>
                                         <div className="mt-3 flex items-center justify-between gap-4">
                                             <span className="text-gray-300">
@@ -157,7 +157,7 @@ export default function Welcome() {
                                 Recursos
                             </p>
                             <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">
-                                Informacao clara para acompanhar sua rotina.
+                                Informação clara para acompanhar sua rotina.
                             </h2>
                         </div>
 
@@ -189,7 +189,7 @@ export default function Welcome() {
                             href={privacyPolicy.url()}
                             className="font-semibold text-emerald-300 hover:text-emerald-200"
                         >
-                            Politica de privacidade
+                            Política de privacidade
                         </Link>
                     </div>
                 </footer>
