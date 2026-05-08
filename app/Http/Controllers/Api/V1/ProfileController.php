@@ -30,6 +30,8 @@ class ProfileController extends Controller
             'user_id' => $request->user()->id,
             'name' => $request->name,
             'age' => $request->input('age'),
+            'birth_date' => $request->input('birth_date'),
+            'sex' => $request->input('sex'),
             'height' => $request->height,
             'notes' => $request->notes,
         ]);
@@ -47,6 +49,8 @@ class ProfileController extends Controller
         ], [
             'uuid' => Str::uuid()->toString(),
             'name' => $request->user()->name,
+            'birth_date' => null,
+            'sex' => null,
         ]);
 
         return $this->successResponse($profile, 'Perfil carregado.');
@@ -64,6 +68,8 @@ class ProfileController extends Controller
             ], [
                 'uuid' => Str::uuid()->toString(),
                 'name' => $request->user()->name,
+                'birth_date' => null,
+                'sex' => null,
             ]);
 
         $profile->fill($request->validated());

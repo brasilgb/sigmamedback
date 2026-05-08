@@ -48,7 +48,9 @@ test('medication logs can sync with medication_uuid and soft delete via deleted_
         'uuid' => Str::uuid()->toString(),
         'profile_id' => $profile->id,
         'medication_uuid' => $medication->uuid,
+        'scheduled_at' => now()->addHour()->toISOString(),
         'taken_at' => now()->toISOString(),
+        'status' => 'skipped',
         'deleted_at' => now()->toISOString(),
     ];
 
@@ -61,6 +63,8 @@ test('medication logs can sync with medication_uuid and soft delete via deleted_
 
     expect($log)->not->toBeNull();
     expect($log->medication_id)->toBe($medication->id);
+    expect($log->scheduled_at)->not->toBeNull();
+    expect($log->status)->toBe('skipped');
     expect($log->trashed())->toBeTrue();
     expect($log->deleted_at->format('Y-m-d H:i:s'))
         ->toBe(Carbon::parse($payload['deleted_at'])->format('Y-m-d H:i:s'));

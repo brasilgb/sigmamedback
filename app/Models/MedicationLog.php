@@ -9,18 +9,21 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MedicationLog extends Model
 {
-    use HasFactory, BelongsToTenant, SoftDeletes;
+    use BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'uuid',
         'tenant_id',
         'medication_id',
         'profile_id',
+        'scheduled_at',
         'taken_at',
+        'status',
         'notes',
     ];
 
     protected $casts = [
+        'scheduled_at' => 'datetime',
         'taken_at' => 'datetime',
     ];
 

@@ -48,7 +48,9 @@ class MedicationLogSyncController extends Controller
             }
 
             $log->fill([
+                'scheduled_at' => $item['scheduled_at'] ?? null,
                 'taken_at' => $item['taken_at'],
+                'status' => $item['status'] ?? 'taken',
                 'notes' => $item['notes'] ?? null,
             ]);
 

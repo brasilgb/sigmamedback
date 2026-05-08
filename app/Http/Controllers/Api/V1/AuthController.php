@@ -133,6 +133,8 @@ class AuthController extends Controller
         ], [
             'uuid' => Str::uuid()->toString(),
             'name' => $request->user()->name,
+            'birth_date' => null,
+            'sex' => null,
         ]);
     }
 }

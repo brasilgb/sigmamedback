@@ -104,6 +104,8 @@ class UserAccountService
         ], [
             'uuid' => Str::uuid()->toString(),
             'name' => $user->name,
+            'birth_date' => null,
+            'sex' => null,
             'height' => $height,
             'notes' => $this->profileNotes($accountUsage),
         ]);

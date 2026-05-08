@@ -24,7 +24,9 @@ class SyncMedicationLogsRequest extends FormRequest
             'items.*.updated_at' => ['sometimes', 'nullable', 'date'],
             'items.*.medication_id' => ['sometimes', 'integer', 'exists:medications,id', 'required_without:items.*.medication_uuid'],
             'items.*.medication_uuid' => ['sometimes', 'uuid', Rule::exists('medications', 'uuid')->where('tenant_id', $tenantId), 'required_without:items.*.medication_id'],
+            'items.*.scheduled_at' => ['sometimes', 'nullable', 'date'],
             'items.*.taken_at' => ['required', 'date'],
+            'items.*.status' => ['sometimes', 'nullable', 'string', 'in:taken,skipped,pending'],
             'items.*.notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'items.*.deleted_at' => ['sometimes', 'nullable', 'date'],
         ];

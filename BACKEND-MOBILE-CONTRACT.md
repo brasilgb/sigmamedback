@@ -164,6 +164,8 @@ Response esperado:
     "user_id": 1,
     "name": "João Silva",
     "photo_path": null,
+    "birth_date": null,
+    "sex": null,
     "height": null,
     "target_weight": null,
     "has_diabetes": false,
@@ -211,6 +213,8 @@ Response esperado:
       "name": "Maria Silva",
       "photo_path": null,
       "age": 68,
+      "birth_date": "1958-02-10",
+      "sex": "female",
       "height": 165,
       "target_weight": null,
       "has_diabetes": false,
@@ -241,6 +245,8 @@ Body:
 {
   "name": "Maria Silva",
   "age": 68,
+  "birth_date": "1958-02-10",
+  "sex": "female",
   "height": 165,
   "notes": "Acompanhamento familiar"
 }
@@ -257,6 +263,8 @@ Response esperado:
     "user_id": 1,
     "name": "Maria Silva",
     "age": 68,
+    "birth_date": "1958-02-10",
+    "sex": "female",
     "height": 165,
     "notes": "Acompanhamento familiar",
     "created_at": "2026-04-25T10:00:00Z",
@@ -336,6 +344,7 @@ Regra geral:
 - `updated_at` resolve conflito: o mais recente vence.
 - `deleted_at` indica soft delete.
 - `profile_id` deve pertencer ao tenant e usuário autenticados.
+- Nas medições (`blood-pressure`, `glicose`, `weight`), `measured_at` é sempre um timestamp completo com data e hora. O app exibe a data como `DD/MM/AAAA` e permite editar a hora separadamente, mas sincroniza tudo neste mesmo campo ISO.
 
 ### Blood Pressure
 
@@ -439,7 +448,9 @@ No app atual, o formulario de peso nao pede altura manualmente. A altura usada p
       "profile_id": 1,
       "medication_uuid": "m6c2d3e4-4567-4f8d-9c01-abcdef012345",
       "medication_id": 10,
+      "scheduled_at": "2026-04-25T08:00:00Z",
       "taken_at": "2026-04-25T08:30:00Z",
+      "status": "taken",
       "notes": null,
       "updated_at": "2026-04-25T08:30:00Z",
       "deleted_at": null
