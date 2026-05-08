@@ -32,7 +32,8 @@ const sections = [
         title: 'Controle e exclusao',
         items: [
             'Voce pode revisar e atualizar dados da conta e dos perfis pelo aplicativo.',
-            'Voce pode solicitar ou executar a exclusao da conta. Quando a conta e excluida, os dados associados sao removidos conforme os prazos tecnicos e legais aplicaveis.',
+            'A exclusao da conta e dos dados pode ser feita pelo proprio usuario na tela de perfil do aplicativo ou solicitada pelo e-mail contato@sigmaos.com.br.',
+            'Quando a conta e excluida, os dados associados sao removidos conforme os prazos tecnicos e legais aplicaveis.',
             'Dados locais no dispositivo podem precisar ser apagados pelo proprio app ou pelas configuracoes do sistema operacional.',
         ],
     },

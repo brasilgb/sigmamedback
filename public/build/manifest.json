@@ -1,6 +1,6 @@
 {
-  "_jsx-runtime-Cgpi5khx.js": {
-    "file": "assets/jsx-runtime-Cgpi5khx.js",
+  "_jsx-runtime-DD5jF98F.js": {
+    "file": "assets/jsx-runtime-DD5jF98F.js",
     "name": "jsx-runtime",
     "imports": [
       "resources/js/app.tsx"
@@ -11,7 +11,7 @@
     "name": "routes"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BOT-HXEL.css",
+    "file": "assets/app-Csvz0Kcw.css",
     "name": "app",
     "names": [
       "app.css"
@@ -20,7 +20,7 @@
     "isEntry": true
   },
   "resources/js/app.tsx": {
-    "file": "assets/app-D47979AC.js",
+    "file": "assets/app-DxvutF12.js",
     "name": "app",
     "src": "resources/js/app.tsx",
     "isEntry": true,
@@ -34,64 +34,64 @@
     ]
   },
   "resources/js/pages/admin/dashboard.tsx": {
-    "file": "assets/dashboard-BsCrWmUy.js",
+    "file": "assets/dashboard-J9ye7JzG.js",
     "name": "dashboard",
     "src": "resources/js/pages/admin/dashboard.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_jsx-runtime-Cgpi5khx.js"
+      "_jsx-runtime-DD5jF98F.js"
     ]
   },
   "resources/js/pages/admin/feedbacks.tsx": {
-    "file": "assets/feedbacks-eWJqpJqR.js",
+    "file": "assets/feedbacks-pCzYk5UY.js",
     "name": "feedbacks",
     "src": "resources/js/pages/admin/feedbacks.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_jsx-runtime-Cgpi5khx.js"
+      "_jsx-runtime-DD5jF98F.js"
     ]
   },
   "resources/js/pages/admin/login.tsx": {
-    "file": "assets/login-D753PzUx.js",
+    "file": "assets/login-CS0B_6Dg.js",
     "name": "login",
     "src": "resources/js/pages/admin/login.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_jsx-runtime-Cgpi5khx.js"
+      "_jsx-runtime-DD5jF98F.js"
     ]
   },
   "resources/js/pages/admin/payments.tsx": {
-    "file": "assets/payments-CCrzXRZ3.js",
+    "file": "assets/payments-B9vmbHkd.js",
     "name": "payments",
     "src": "resources/js/pages/admin/payments.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_jsx-runtime-Cgpi5khx.js"
+      "_jsx-runtime-DD5jF98F.js"
     ]
   },
   "resources/js/pages/privacy-policy.tsx": {
-    "file": "assets/privacy-policy-CQLzngHa.js",
+    "file": "assets/privacy-policy-Ck5gLnxA.js",
     "name": "privacy-policy",
     "src": "resources/js/pages/privacy-policy.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_jsx-runtime-Cgpi5khx.js",
+      "_jsx-runtime-DD5jF98F.js",
       "_routes-BeP-_1Q1.js"
     ]
   },
   "resources/js/pages/welcome.tsx": {
-    "file": "assets/welcome-CF8aVhyk.js",
+    "file": "assets/welcome-AVu5_xkI.js",
     "name": "welcome",
     "src": "resources/js/pages/welcome.tsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.tsx",
-      "_jsx-runtime-Cgpi5khx.js",
+      "_jsx-runtime-DD5jF98F.js",
       "_routes-BeP-_1Q1.js"
     ]
   }
