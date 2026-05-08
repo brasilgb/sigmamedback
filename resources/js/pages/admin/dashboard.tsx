@@ -93,19 +93,19 @@ const Dashboard: React.FC<Props> = ({ stats, users }) => {
 
     return (
         <div className="min-h-screen bg-gray-900 p-8 font-sans text-gray-100">
-            <Head title="Admin Dashboard - SigmaMed" />
+            <Head title="Admin Dashboard - Meu Controle" />
 
             <div className="mx-auto max-w-7xl">
                 <header className="mb-12 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <img
                             src="/images/logo_branco.png"
-                            alt="SigmaMed"
+                            alt="Meu Controle"
                             className="h-14 w-auto"
                         />
                         <div>
                             <h1 className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-4xl font-extrabold text-transparent">
-                                SigmaMed Admin
+                                Meu Controle Admin
                             </h1>
                             <p className="mt-2 text-gray-400">
                                 Gerenciamento de usuários e assinaturas

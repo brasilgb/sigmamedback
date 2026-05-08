@@ -1,4 +1,4 @@
-# BACKEND MOBILE CONTRACT — SigmaMed
+# BACKEND MOBILE CONTRACT — Meu Controle
 
 Este documento consolida o contrato final esperado pelo app mobile para autenticação, perfil, avatar e sincronização offline-first com a API Laravel.
 

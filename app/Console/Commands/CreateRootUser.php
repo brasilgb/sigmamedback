@@ -32,7 +32,7 @@ class CreateRootUser extends Command
     {
         $email = $this->argument('email') ?? text(
             label: 'Qual o email do usuário root?',
-            placeholder: 'admin@sigmamed.com.br',
+            placeholder: 'admin@meucontrole.app',
             required: true,
             validate: fn (string $value) => ! filter_var($value, FILTER_VALIDATE_EMAIL) ? 'Email inválido.' : null
         );

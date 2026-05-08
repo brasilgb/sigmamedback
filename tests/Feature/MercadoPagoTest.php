@@ -89,7 +89,7 @@ test('mercado pago service logs failed pix payment response', function () {
     $response = app(MercadoPagoService::class)->createPixPayment(
         9.90,
         'user@example.com',
-        'Assinatura SigmaMed - Plano Personal',
+        'Assinatura Meu Controle - Plano Personal',
     );
 
     expect($response)->toBeNull();
@@ -110,7 +110,7 @@ test('mercado pago service does not send local notification url', function () {
     app(MercadoPagoService::class)->createPixPayment(
         9.90,
         'user@example.com',
-        'Assinatura SigmaMed - Plano Personal',
+        'Assinatura Meu Controle - Plano Personal',
     );
 
     Http::assertSent(fn ($request) => ! array_key_exists('notification_url', $request->data()));
@@ -118,7 +118,7 @@ test('mercado pago service does not send local notification url', function () {
 
 test('mercado pago service sends public https notification url', function () {
     config([
-        'app.url' => 'https://api.sigmamed.com.br',
+        'app.url' => 'https://api.meucontrole.app',
         'services.mercadopago.access_token' => 'APP_USR-test-token',
     ]);
 
@@ -131,10 +131,10 @@ test('mercado pago service sends public https notification url', function () {
     app(MercadoPagoService::class)->createPixPayment(
         9.90,
         'user@example.com',
-        'Assinatura SigmaMed - Plano Personal',
+        'Assinatura Meu Controle - Plano Personal',
     );
 
-    Http::assertSent(fn ($request) => ($request->data()['notification_url'] ?? null) === 'https://api.sigmamed.com.br/api/v1/webhooks/mercadopago');
+    Http::assertSent(fn ($request) => ($request->data()['notification_url'] ?? null) === 'https://api.meucontrole.app/api/v1/webhooks/mercadopago');
 });
 
 test('webhook approves payment and enables tenant sync', function () {

@@ -85,14 +85,14 @@ const Payments: React.FC<Props> = ({ payments }) => {
 
     return (
         <div className="min-h-screen bg-gray-900 p-8 font-sans text-gray-100">
-            <Head title="Histórico de Pagamentos - SigmaMed" />
+            <Head title="Histórico de Pagamentos - Meu Controle" />
 
             <div className="mx-auto max-w-7xl">
                 <header className="mb-12 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <img
                             src="/images/logo_branco.png"
-                            alt="SigmaMed"
+                            alt="Meu Controle"
                             className="h-14 w-auto"
                         />
                         <div>

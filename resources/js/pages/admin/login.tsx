@@ -14,17 +14,17 @@ const Login: React.FC = () => {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-900 p-6 font-sans">
-            <Head title="Admin Login - SigmaMed" />
+            <Head title="Admin Login - Meu Controle" />
 
             <div className="w-full max-w-md rounded-3xl border border-gray-700 bg-gray-800 p-10 shadow-2xl">
                 <div className="mb-10 text-center">
                     <img
                         src="/images/logo_branco.png"
-                        alt="SigmaMed"
+                        alt="Meu Controle"
                         className="mx-auto mb-6 h-16 w-auto"
                     />
                     <h1 className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-3xl font-extrabold text-transparent">
-                        SigmaMed Root
+                        Meu Controle Root
                     </h1>
                     <p className="mt-2 text-gray-400">
                         Acesso restrito ao administrador
@@ -41,7 +41,7 @@ const Login: React.FC = () => {
                             className="w-full rounded-xl border border-gray-700 bg-gray-900 p-4 transition-all outline-none focus:ring-2 focus:ring-blue-500"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="admin@sigmamed.com"
+                            placeholder="admin@meucontrole.app"
                         />
                         {errors.email && (
                             <p className="mt-2 text-xs text-red-400">
@@ -80,8 +80,8 @@ const Login: React.FC = () => {
 
                 <div className="mt-8 text-center">
                     <p className="text-xs text-gray-500">
-                        &copy; {new Date().getFullYear()} SigmaMed - Sistema de
-                        Gestão Root
+                        &copy; {new Date().getFullYear()} Meu Controle - Sistema
+                        de Gestão Root
                     </p>
                 </div>
             </div>

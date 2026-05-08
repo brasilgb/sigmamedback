@@ -64,14 +64,14 @@ const Feedbacks: React.FC<Props> = ({
 
     return (
         <div className="min-h-screen bg-gray-900 p-8 font-sans text-gray-100">
-            <Head title="Feedbacks - SigmaMed" />
+            <Head title="Feedbacks - Meu Controle" />
 
             <div className="mx-auto max-w-7xl">
                 <header className="mb-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-center gap-4">
                         <img
                             src="/images/logo_branco.png"
-                            alt="SigmaMed"
+                            alt="Meu Controle"
                             className="h-14 w-auto"
                         />
                         <div>
