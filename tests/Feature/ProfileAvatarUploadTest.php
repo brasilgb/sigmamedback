@@ -38,9 +38,30 @@ test('authenticated user can upload and delete avatar', function () {
 
     Storage::disk('public')->assertExists($photoPath);
 
+    $profileResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->getJson('/api/v1/profile');
+
+    $profileResponse->assertOk();
+    $profileResponse->assertJsonPath('data.photo_path', $photoPath);
+    $profileResponse->assertJsonPath('data.avatar_url', Storage::disk('public')->url($photoPath));
+
+    $meResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->getJson('/api/v1/auth/me');
+
+    $meResponse->assertOk();
+    $meResponse->assertJsonPath('data.profile.photo_path', $photoPath);
+    $meResponse->assertJsonPath('data.profile.avatar_url', Storage::disk('public')->url($photoPath));
+
     $deleteResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->deleteJson('/api/v1/auth/me/avatar');
 
     $deleteResponse->assertOk();
     Storage::disk('public')->assertMissing($photoPath);
+
+    $profileResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->getJson('/api/v1/profile');
+
+    $profileResponse->assertOk();
+    $profileResponse->assertJsonPath('data.photo_path', null);
+    $profileResponse->assertJsonPath('data.avatar_url', null);
 });
