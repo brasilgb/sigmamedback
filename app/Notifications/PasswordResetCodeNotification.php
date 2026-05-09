@@ -20,7 +20,7 @@ class PasswordResetCodeNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Código de recuperação de senha')
+            ->subject('Meu Controle')
             ->view('emails.password-reset-code', [
                 'code' => $this->code,
                 'expiresInMinutes' => config('auth.passwords.users.expire'),
