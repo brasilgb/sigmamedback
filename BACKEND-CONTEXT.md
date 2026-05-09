@@ -438,13 +438,68 @@ O backend deve oferecer recuperação de senha online por e-mail:
 * `POST /api/v1/auth/forgot-password`: recebe `email`, gera código temporário e envia por e-mail.
 * `POST /api/v1/auth/reset-password`: recebe `email`, `code`, `password` e `password_confirmation`.
 
+#### `POST /api/v1/auth/forgot-password`
+
+Request:
+
+```json
+{
+  "email": "usuario@exemplo.com"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "data": {},
+  "meta": {},
+  "message": "Se o e-mail estiver cadastrado, enviaremos um código de recuperação."
+}
+```
+
+#### `POST /api/v1/auth/reset-password`
+
+Request:
+
+```json
+{
+  "email": "usuario@exemplo.com",
+  "code": "123456",
+  "password": "nova-senha",
+  "password_confirmation": "nova-senha"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "data": {},
+  "meta": {},
+  "message": "Senha redefinida com sucesso."
+}
+```
+
+Response `422` para código inválido ou expirado:
+
+```json
+{
+  "data": {},
+  "meta": {},
+  "message": "Código de recuperação inválido ou expirado."
+}
+```
+
 Regras:
 
 * senha mínima de 6 caracteres
+* código numérico de 6 dígitos
 * código temporário, de uso único, vinculado ao e-mail e com expiração curta
 * rate limit nas rotas públicas de recuperação
 * resposta genérica em `forgot-password`, sem revelar se o e-mail existe
 * invalidar códigos pendentes após sucesso
+* revogar tokens ativos do usuário após redefinir a senha
 * PIN local e biometria do app não participam desse fluxo
 
 ## Resolução do Tenant
