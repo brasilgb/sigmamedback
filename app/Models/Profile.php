@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Profile extends Model
 {
@@ -35,6 +36,21 @@ class Profile extends Model
         'has_diabetes' => 'boolean',
         'has_hypertension' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (Profile $profile): void {
+            if ($profile->isDirty('photo_path') && $profile->getOriginal('photo_path')) {
+                Storage::disk('public')->delete($profile->getOriginal('photo_path'));
+            }
+        });
+
+        static::deleting(function (Profile $profile): void {
+            if ($profile->photo_path) {
+                Storage::disk('public')->delete($profile->photo_path);
+            }
+        });
+    }
 
     public function tenant()
     {

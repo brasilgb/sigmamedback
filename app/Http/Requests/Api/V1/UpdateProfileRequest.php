@@ -19,7 +19,7 @@ class UpdateProfileRequest extends FormRequest
             'age' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:120'],
             'birth_date' => ['sometimes', 'nullable', 'date'],
             'sex' => ['sometimes', 'nullable', 'string', 'max:20'],
-            'photo_path' => ['sometimes', 'string', 'max:1024'],
+            'photo_path' => ['sometimes', 'nullable', 'string', 'max:1024'],
             'height' => ['sometimes', 'numeric', 'min:0'],
             'target_weight' => ['sometimes', 'numeric', 'min:0'],
             'has_diabetes' => ['sometimes', 'boolean'],

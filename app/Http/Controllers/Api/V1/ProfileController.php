@@ -8,7 +8,6 @@ use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Models\Profile;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProfileController extends Controller
@@ -95,10 +94,6 @@ class ProfileController extends Controller
     public function destroy(Request $request, Profile $profile)
     {
         $this->ensureProfileBelongsToCurrentTenant($request, $profile);
-
-        if ($profile->photo_path) {
-            Storage::disk('public')->delete($profile->photo_path);
-        }
 
         $profile->delete();
 

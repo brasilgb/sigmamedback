@@ -71,6 +71,7 @@ class UserAccountService
     {
         DB::transaction(function () use ($user): void {
             $user->tokens()->delete();
+            $user->profiles->each->delete();
 
             $user->tenants()
                 ->wherePivot('role', 'owner')

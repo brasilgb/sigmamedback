@@ -132,7 +132,7 @@ class DashboardController extends Controller
         \DB::transaction(function () use ($user) {
             if (! $user->is_admin) {
                 // Se não for root, exclui dados relacionados
-                $user->profiles()->delete();
+                $user->profiles->each->delete();
                 Tenant::where('owner_id', $user->id)->delete();
             }
 

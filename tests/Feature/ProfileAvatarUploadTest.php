@@ -26,7 +26,7 @@ test('authenticated user can upload and delete avatar', function () {
 
     Sanctum::actingAs($user, ['*']);
 
-    $avatar = File::image('avatar.png');
+    $avatar = File::image('avatar.png', 1200, 900);
 
     $response = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->postJson('/api/v1/auth/me/avatar', ['avatar' => $avatar]);
@@ -41,7 +41,13 @@ test('authenticated user can upload and delete avatar', function () {
     expect($avatarUrl)
         ->toStartWith(config('app.url').'/avatars/')
         ->not->toContain('/storage/avatars/');
+    expect($photoPath)->toEndWith('.jpg');
     $response->assertJsonPath('data.avatar_url', $avatarUrl);
+    expect(getimagesize(Storage::disk('public')->path($photoPath)))->toMatchArray([
+        0 => 512,
+        1 => 512,
+        2 => IMAGETYPE_JPEG,
+    ]);
 
     $profileResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->getJson('/api/v1/profile');
@@ -57,11 +63,31 @@ test('authenticated user can upload and delete avatar', function () {
     $meResponse->assertJsonPath('data.profile.photo_path', $photoPath);
     $meResponse->assertJsonPath('data.profile.avatar_url', $avatarUrl);
 
+    $newAvatar = File::image('new-avatar.jpg', 900, 1200);
+
+    $replaceResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->postJson('/api/v1/auth/me/avatar', ['avatar' => $newAvatar]);
+
+    $replaceResponse->assertOk();
+
+    $newPhotoPath = $replaceResponse->json('data.photo_path');
+    $newAvatarUrl = config('app.url').'/'.$newPhotoPath;
+
+    expect($newPhotoPath)->not->toBe($photoPath);
+    Storage::disk('public')->assertMissing($photoPath);
+    Storage::disk('public')->assertExists($newPhotoPath);
+    $replaceResponse->assertJsonPath('data.avatar_url', $newAvatarUrl);
+    expect(getimagesize(Storage::disk('public')->path($newPhotoPath)))->toMatchArray([
+        0 => 512,
+        1 => 512,
+        2 => IMAGETYPE_JPEG,
+    ]);
+
     $deleteResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->deleteJson('/api/v1/auth/me/avatar');
 
     $deleteResponse->assertOk();
-    Storage::disk('public')->assertMissing($photoPath);
+    Storage::disk('public')->assertMissing($newPhotoPath);
 
     $profileResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->getJson('/api/v1/profile');

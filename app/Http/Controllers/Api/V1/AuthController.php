@@ -8,16 +8,19 @@ use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Requests\Api\V1\UploadAvatarRequest;
 use App\Models\Profile;
+use App\Services\AvatarImageService;
 use App\Services\UserAccountService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function __construct(protected UserAccountService $userAccountService) {}
+    public function __construct(
+        protected UserAccountService $userAccountService,
+        protected AvatarImageService $avatarImageService,
+    ) {}
 
     public function register(RegisterRequest $request)
     {
@@ -102,7 +105,7 @@ class AuthController extends Controller
     public function uploadAvatar(UploadAvatarRequest $request)
     {
         $profile = $this->resolveProfile($request);
-        $path = $request->file('avatar')->store('avatars', 'public');
+        $path = $this->avatarImageService->store($request->file('avatar'));
 
         $profile->photo_path = $path;
         $profile->save();
@@ -118,7 +121,6 @@ class AuthController extends Controller
         $profile = $this->resolveProfile($request);
 
         if ($profile->photo_path) {
-            Storage::disk('public')->delete($profile->photo_path);
             $profile->photo_path = null;
             $profile->save();
         }
