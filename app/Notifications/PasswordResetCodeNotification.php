@@ -21,10 +21,11 @@ class PasswordResetCodeNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Código de recuperação de senha')
-            ->line('Use o código abaixo para redefinir sua senha no Meu Controle.')
-            ->line($this->code)
-            ->line('Este código expira em 60 minutos.')
-            ->line('Se você não solicitou a recuperação, ignore este e-mail.');
+            ->view('emails.password-reset-code', [
+                'code' => $this->code,
+                'expiresInMinutes' => config('auth.passwords.users.expire'),
+                'logoUrl' => asset('images/logo_branco.png'),
+            ]);
     }
 
     public function toArray(object $notifiable): array
