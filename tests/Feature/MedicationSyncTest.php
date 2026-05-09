@@ -40,6 +40,7 @@ test('medication sync accepts full datetime scheduled_time and returns it in YYY
         'instructions' => 'Take after breakfast',
         'active' => true,
         'scheduled_time' => '2026-04-26 21:00:00',
+        'dose_interval' => '12:00',
         'reminder_enabled' => true,
         'repeat_reminder_every_five_minutes' => false,
         'reminder_minutes_before' => 5,
@@ -51,10 +52,12 @@ test('medication sync accepts full datetime scheduled_time and returns it in YYY
 
     $response->assertOk();
     $response->assertJsonPath('data.0.scheduled_time', '2026-04-26 21:00:00');
+    $response->assertJsonPath('data.0.dose_interval', '12:00');
     $response->assertJsonPath('data.0.name', 'Losartana');
 
     $medication = Medication::where('uuid', $payload['uuid'])->first();
 
     expect($medication)->not->toBeNull();
     expect($medication->scheduled_time->format('Y-m-d H:i:s'))->toBe('2026-04-26 21:00:00');
+    expect($medication->dose_interval)->toBe('12:00');
 });

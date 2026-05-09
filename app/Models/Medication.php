@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Medication extends Model
 {
-    use HasFactory, BelongsToTenant, SoftDeletes;
+    use BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'uuid',
@@ -20,6 +20,7 @@ class Medication extends Model
         'instructions',
         'active',
         'scheduled_time',
+        'dose_interval',
         'reminder_enabled',
         'repeat_reminder_every_five_minutes',
         'reminder_minutes_before',

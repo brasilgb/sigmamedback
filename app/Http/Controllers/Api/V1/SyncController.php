@@ -236,6 +236,7 @@ class SyncController extends Controller
                 'instructions' => $item['instructions'] ?? null,
                 'active' => $item['active'] ?? false,
                 'scheduled_time' => $item['scheduled_time'] ?? null,
+                'dose_interval' => $item['dose_interval'] ?? null,
                 'reminder_enabled' => $item['reminder_enabled'] ?? false,
                 'repeat_reminder_every_five_minutes' => $item['repeat_reminder_every_five_minutes'] ?? false,
                 'reminder_minutes_before' => $item['reminder_minutes_before'] ?? null,

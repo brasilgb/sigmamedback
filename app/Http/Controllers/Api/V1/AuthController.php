@@ -3,16 +3,23 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
+use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Requests\Api\V1\UploadAvatarRequest;
 use App\Models\Profile;
+use App\Models\User;
+use App\Notifications\PasswordResetCodeNotification;
 use App\Services\AvatarImageService;
 use App\Services\UserAccountService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -59,6 +66,62 @@ class AuthController extends Controller
             'profile' => $profile,
             'profile_id' => $profile?->id,
         ], 'Login realizado com sucesso.');
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+        $email = Str::lower($request->string('email')->toString());
+        $user = User::where('email', $email)->where('is_admin', false)->first();
+
+        if ($user) {
+            $code = (string) random_int(100000, 999999);
+
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $email],
+                [
+                    'token' => Hash::make($code),
+                    'created_at' => now(),
+                ],
+            );
+
+            $user->notify(new PasswordResetCodeNotification($code));
+        }
+
+        return $this->successResponse(null, 'Se o e-mail estiver cadastrado, enviaremos um código de recuperação.');
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        $email = Str::lower($request->string('email')->toString());
+        $resetToken = DB::table('password_reset_tokens')->where('email', $email)->first();
+        $expiresAt = $resetToken?->created_at
+            ? Carbon::parse($resetToken->created_at)->addMinutes(config('auth.passwords.users.expire'))
+            : null;
+
+        if (
+            ! $resetToken
+            || ! $expiresAt
+            || $expiresAt->isPast()
+            || ! Hash::check($request->string('code')->toString(), $resetToken->token)
+        ) {
+            return $this->errorResponse('Código de recuperação inválido ou expirado.', 422);
+        }
+
+        $user = User::where('email', $email)->where('is_admin', false)->first();
+
+        if (! $user) {
+            return $this->errorResponse('Código de recuperação inválido ou expirado.', 422);
+        }
+
+        $user->forceFill([
+            'password' => $request->string('password')->toString(),
+        ])->save();
+
+        $user->tokens()->delete();
+
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        return $this->successResponse(null, 'Senha redefinida com sucesso.');
     }
 
     public function logout(Request $request)
