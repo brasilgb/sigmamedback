@@ -3,6 +3,7 @@
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
@@ -90,7 +91,7 @@ test('authenticated user can create accompanied profile with age', function () {
         'user_id' => $user->id,
         'name' => 'Maria Silva',
         'age' => 68,
-        'birth_date' => '1958-02-10',
+        'birth_date' => '1958-02-10 00:00:00',
         'sex' => 'female',
     ]);
 });
@@ -125,7 +126,142 @@ test('authenticated user can update profile sex', function () {
         'tenant_id' => $tenant->id,
         'user_id' => $user->id,
         'name' => 'Maria Silva',
-        'birth_date' => '1958-02-10',
+        'birth_date' => '1958-02-10 00:00:00',
         'sex' => 'female',
     ]);
+});
+
+test('authenticated user can update accompanied profile by id', function () {
+    $user = User::factory()->create();
+
+    $tenant = Tenant::create([
+        'uuid' => Str::uuid()->toString(),
+        'name' => 'Tenant Test',
+        'slug' => 'tenant-test-update-accompanied',
+        'owner_id' => $user->id,
+    ]);
+
+    $tenant->users()->attach($user->id, ['role' => 'owner']);
+
+    Sanctum::actingAs($user, ['*']);
+
+    $createResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->postJson('/api/v1/profiles', [
+            'name' => 'Maria Silva',
+            'age' => 68,
+            'birth_date' => '1958-02-10',
+            'sex' => 'female',
+            'height' => 165,
+            'notes' => 'Acompanhamento familiar',
+        ]);
+
+    $profileId = $createResponse->json('data.id');
+
+    $response = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->putJson("/api/v1/profiles/{$profileId}", [
+            'name' => 'Maria Souza',
+            'age' => 69,
+            'birth_date' => '1957-02-10',
+            'sex' => 'female',
+            'height' => 166,
+            'has_hypertension' => true,
+        ]);
+
+    $response->assertOk();
+    $response->assertJsonPath('data.id', $profileId);
+    $response->assertJsonPath('data.name', 'Maria Souza');
+    $response->assertJsonPath('data.age', 69);
+    $response->assertJsonPath('data.birth_date', '1957-02-10T00:00:00.000000Z');
+    $response->assertJsonPath('data.has_hypertension', true);
+    $response->assertJsonPath('message', 'Perfil atualizado.');
+
+    $this->assertDatabaseHas('profiles', [
+        'id' => $profileId,
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'name' => 'Maria Souza',
+        'age' => 69,
+        'birth_date' => '1957-02-10 00:00:00',
+    ]);
+});
+
+test('authenticated user can delete accompanied profile by id', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $tenant = Tenant::create([
+        'uuid' => Str::uuid()->toString(),
+        'name' => 'Tenant Test',
+        'slug' => 'tenant-test-delete-accompanied',
+        'owner_id' => $user->id,
+    ]);
+
+    $tenant->users()->attach($user->id, ['role' => 'owner']);
+
+    Sanctum::actingAs($user, ['*']);
+
+    Storage::disk('public')->put('avatars/avatar.jpg', 'avatar');
+
+    $createResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->postJson('/api/v1/profiles', [
+            'name' => 'Maria Silva',
+        ]);
+
+    $profileId = $createResponse->json('data.id');
+
+    $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->putJson("/api/v1/profiles/{$profileId}", [
+            'photo_path' => 'avatars/avatar.jpg',
+        ])
+        ->assertOk();
+
+    $response = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->deleteJson("/api/v1/profiles/{$profileId}");
+
+    $response->assertOk();
+    $response->assertJsonPath('data.deleted', true);
+    $response->assertJsonPath('message', 'Perfil removido.');
+
+    $this->assertDatabaseMissing('profiles', [
+        'id' => $profileId,
+    ]);
+
+    Storage::disk('public')->assertMissing('avatars/avatar.jpg');
+});
+
+test('user cannot update profile from another tenant', function () {
+    $user = User::factory()->create();
+
+    $tenant = Tenant::create([
+        'uuid' => Str::uuid()->toString(),
+        'name' => 'Tenant Test',
+        'slug' => 'tenant-test-owned',
+        'owner_id' => $user->id,
+    ]);
+
+    $otherTenant = Tenant::create([
+        'uuid' => Str::uuid()->toString(),
+        'name' => 'Other Tenant',
+        'slug' => 'tenant-test-other',
+        'owner_id' => $user->id,
+    ]);
+
+    $tenant->users()->attach($user->id, ['role' => 'owner']);
+    $otherTenant->users()->attach($user->id, ['role' => 'owner']);
+
+    Sanctum::actingAs($user, ['*']);
+
+    $createResponse = $this->withHeaders(['X-Tenant-Id' => $otherTenant->id])
+        ->postJson('/api/v1/profiles', [
+            'name' => 'Other Profile',
+        ]);
+
+    $profileId = $createResponse->json('data.id');
+
+    $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->putJson("/api/v1/profiles/{$profileId}", [
+            'name' => 'Invalid Update',
+        ])
+        ->assertNotFound();
 });

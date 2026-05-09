@@ -35,22 +35,27 @@ test('authenticated user can upload and delete avatar', function () {
     $response->assertJsonStructure(['data' => ['photo_path', 'avatar_url'], 'message']);
 
     $photoPath = $response->json('data.photo_path');
+    $avatarUrl = config('app.url').'/'.$photoPath;
 
     Storage::disk('public')->assertExists($photoPath);
+    expect($avatarUrl)
+        ->toStartWith(config('app.url').'/avatars/')
+        ->not->toContain('/storage/avatars/');
+    $response->assertJsonPath('data.avatar_url', $avatarUrl);
 
     $profileResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->getJson('/api/v1/profile');
 
     $profileResponse->assertOk();
     $profileResponse->assertJsonPath('data.photo_path', $photoPath);
-    $profileResponse->assertJsonPath('data.avatar_url', Storage::disk('public')->url($photoPath));
+    $profileResponse->assertJsonPath('data.avatar_url', $avatarUrl);
 
     $meResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->getJson('/api/v1/auth/me');
 
     $meResponse->assertOk();
     $meResponse->assertJsonPath('data.profile.photo_path', $photoPath);
-    $meResponse->assertJsonPath('data.profile.avatar_url', Storage::disk('public')->url($photoPath));
+    $meResponse->assertJsonPath('data.profile.avatar_url', $avatarUrl);
 
     $deleteResponse = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->deleteJson('/api/v1/auth/me/avatar');

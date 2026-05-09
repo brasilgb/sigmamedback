@@ -38,6 +38,8 @@ Route::prefix('v1')->group(function () {
         Route::patch('profile', [ProfileController::class, 'update']);
         Route::get('profiles', [ProfileController::class, 'index']);
         Route::post('profiles', [ProfileController::class, 'store']);
+        Route::put('profiles/{profile}', [ProfileController::class, 'updateAccompanied']);
+        Route::delete('profiles/{profile}', [ProfileController::class, 'destroy']);
         Route::post('feedback', [FeedbackController::class, 'store']);
 
         Route::prefix('billing')->group(function () {

@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class Profile extends Model
 {
@@ -53,7 +52,7 @@ class Profile extends Model
             return null;
         }
 
-        return Storage::disk('public')->url($this->photo_path);
+        return rtrim(config('app.url'), '/').'/'.ltrim($this->photo_path, '/');
     }
 
     public function bloodPressureReadings()

@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Models\Profile;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProfileController extends Controller
@@ -79,5 +80,40 @@ class ProfileController extends Controller
             'data' => $profile,
             'message' => 'Perfil atualizado.',
         ]);
+    }
+
+    public function updateAccompanied(UpdateProfileRequest $request, Profile $profile)
+    {
+        $this->ensureProfileBelongsToCurrentTenant($request, $profile);
+
+        $profile->fill($request->validated());
+        $profile->save();
+
+        return $this->successResponse($profile, 'Perfil atualizado.');
+    }
+
+    public function destroy(Request $request, Profile $profile)
+    {
+        $this->ensureProfileBelongsToCurrentTenant($request, $profile);
+
+        if ($profile->photo_path) {
+            Storage::disk('public')->delete($profile->photo_path);
+        }
+
+        $profile->delete();
+
+        return $this->successResponse([
+            'deleted' => true,
+        ], 'Perfil removido.');
+    }
+
+    protected function ensureProfileBelongsToCurrentTenant(Request $request, Profile $profile): void
+    {
+        $tenant = TenantContext::current();
+
+        abort_if(
+            $profile->tenant_id !== $tenant->id || $profile->user_id !== $request->user()->id,
+            404
+        );
     }
 }

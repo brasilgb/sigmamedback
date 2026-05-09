@@ -109,7 +109,7 @@ class AuthController extends Controller
 
         return $this->successResponse([
             'photo_path' => $path,
-            'avatar_url' => Storage::disk('public')->url($path),
+            'avatar_url' => $profile->avatar_url,
         ], 'Avatar enviado.');
     }
 
