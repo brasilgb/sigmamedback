@@ -5,6 +5,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\MercadoPagoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Mockery\MockInterface;
@@ -75,7 +76,7 @@ test('sync access refreshes approved pending pix payment', function () {
     $response->assertOk();
     $response->assertJsonPath('data.sync_enabled', true);
     $response->assertJsonPath('data.status', 'active');
-    $response->assertJsonPath('data.expires_at', null);
+    $response->assertJsonPath('data.expires_at', now()->addMonth()->toIso8601String());
 
     $payment->refresh();
     $tenant->refresh();
@@ -83,6 +84,70 @@ test('sync access refreshes approved pending pix payment', function () {
     expect($payment->status)->toBe('approved');
     expect($payment->paid_at)->not->toBeNull();
     expect($tenant->sync_enabled)->toBeTrue();
+});
+
+test('sync access returns monthly plan expiration date', function () {
+    Carbon::setTestNow(Carbon::parse('2026-05-11 10:00:00'));
+
+    $user = User::factory()->create();
+    $tenant = Tenant::create([
+        'uuid' => Str::uuid()->toString(),
+        'name' => 'Tenant Test',
+        'slug' => 'tenant-test-monthly-expiration',
+        'owner_id' => $user->id,
+        'sync_enabled' => true,
+    ]);
+
+    $tenant->users()->attach($user->id, ['role' => 'owner']);
+
+    Payment::create([
+        'tenant_id' => $tenant->id,
+        'external_id' => 'monthly-payment-id',
+        'amount' => 9.90,
+        'status' => 'approved',
+        'plan_type' => 'personal_monthly',
+        'paid_at' => now(),
+    ]);
+
+    Sanctum::actingAs($user, ['*']);
+
+    $response = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->getJson('/api/v1/billing/sync-access');
+
+    $response->assertOk();
+    $response->assertJsonPath('data.expires_at', now()->addMonth()->toIso8601String());
+});
+
+test('sync access returns annual plan expiration date', function () {
+    Carbon::setTestNow(Carbon::parse('2026-05-11 10:00:00'));
+
+    $user = User::factory()->create();
+    $tenant = Tenant::create([
+        'uuid' => Str::uuid()->toString(),
+        'name' => 'Tenant Test',
+        'slug' => 'tenant-test-annual-expiration',
+        'owner_id' => $user->id,
+        'sync_enabled' => true,
+    ]);
+
+    $tenant->users()->attach($user->id, ['role' => 'owner']);
+
+    Payment::create([
+        'tenant_id' => $tenant->id,
+        'external_id' => 'annual-payment-id',
+        'amount' => 99.90,
+        'status' => 'approved',
+        'plan_type' => 'personal_annual',
+        'paid_at' => now(),
+    ]);
+
+    Sanctum::actingAs($user, ['*']);
+
+    $response = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
+        ->getJson('/api/v1/billing/sync-access');
+
+    $response->assertOk();
+    $response->assertJsonPath('data.expires_at', now()->addYear()->toIso8601String());
 });
 
 test('user can create checkout pix', function () {

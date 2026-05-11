@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Services\MercadoPagoService;
 use App\Services\PaymentStatusService;
 use App\Support\Tenancy\TenantContext;
+use Carbon\CarbonInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,11 +24,12 @@ class BillingController extends Controller
 
         $this->paymentStatusService->refreshPendingForTenant($tenant->id);
         $tenant->refresh();
+        $activePayment = $this->activePaymentForTenant($tenant->id);
 
         return $this->successResponse([
             'sync_enabled' => $tenant->sync_enabled,
             'status' => $tenant->sync_enabled ? 'active' : 'inactive',
-            'expires_at' => null,
+            'expires_at' => $activePayment ? $this->planExpiresAt($activePayment)->toIso8601String() : null,
             'provider' => 'mercado_pago',
         ], 'Acesso à sincronização carregado.');
     }
@@ -92,6 +94,26 @@ class BillingController extends Controller
             'qr_code_base64' => $payment->qr_code_base64,
             'expires_at' => $payment->expires_at->toIso8601String(),
         ], $message);
+    }
+
+    protected function activePaymentForTenant(int $tenantId): ?Payment
+    {
+        return Payment::where('tenant_id', $tenantId)
+            ->where('status', 'approved')
+            ->whereNotNull('paid_at')
+            ->latest('paid_at')
+            ->first();
+    }
+
+    protected function planExpiresAt(Payment $payment): CarbonInterface
+    {
+        $paidAt = $payment->paid_at;
+
+        if (str_ends_with($payment->plan_type, '_annual')) {
+            return $paidAt->copy()->addYear();
+        }
+
+        return $paidAt->copy()->addMonth();
     }
 
     /**
