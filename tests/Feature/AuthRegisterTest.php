@@ -1,10 +1,15 @@
 <?php
 
+use App\Models\User;
+use App\Notifications\UserCreatedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
 
 test('user can register with personal account usage', function () {
+    Notification::fake();
+
     $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'João Silva',
         'email' => 'joao@exemplo.com',
@@ -12,7 +17,6 @@ test('user can register with personal account usage', function () {
         'password_confirmation' => 'secret123',
         'account_usage' => 'personal',
         'age' => 35,
-        'birth_date' => '1991-05-20',
         'sex' => 'male',
         'height' => 170,
     ]);
@@ -21,7 +25,6 @@ test('user can register with personal account usage', function () {
     $response->assertJsonPath('data.user.name', 'João Silva');
     $response->assertJsonPath('data.profile.name', 'João Silva');
     $response->assertJsonPath('data.profile.age', 35);
-    $response->assertJsonPath('data.profile.birth_date', '1991-05-20T00:00:00.000000Z');
     $response->assertJsonPath('data.profile.sex', 'male');
     $response->assertJsonPath('data.profile.height', 170);
     $response->assertJsonPath('data.profile_id', $response->json('data.profile.id'));
@@ -35,7 +38,6 @@ test('user can register with personal account usage', function () {
     $this->assertDatabaseHas('profiles', [
         'name' => 'João Silva',
         'age' => 35,
-        'birth_date' => '1991-05-20',
         'sex' => 'male',
         'height' => 170,
         'notes' => 'Perfil pessoal',
@@ -50,6 +52,11 @@ test('user can register with personal account usage', function () {
         'payment_method' => 'none',
         'plan_type' => 'personal',
     ]);
+
+    Notification::assertSentTo(
+        User::where('email', 'joao@exemplo.com')->first(),
+        UserCreatedNotification::class,
+    );
 });
 
 test('user can register with family account usage without creating accompanied person', function () {

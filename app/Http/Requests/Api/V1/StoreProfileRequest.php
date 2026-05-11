@@ -16,7 +16,6 @@ class StoreProfileRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'age' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:120'],
-            'birth_date' => ['sometimes', 'nullable', 'date'],
             'sex' => ['sometimes', 'nullable', 'string', 'max:20'],
             'height' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:300'],
             'notes' => ['sometimes', 'nullable', 'string'],

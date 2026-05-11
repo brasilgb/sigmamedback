@@ -12,6 +12,7 @@ use App\Http\Requests\Api\V1\UploadAvatarRequest;
 use App\Models\Profile;
 use App\Models\User;
 use App\Notifications\PasswordResetCodeNotification;
+use App\Notifications\UserCreatedNotification;
 use App\Services\AvatarImageService;
 use App\Services\UserAccountService;
 use App\Support\Tenancy\TenantContext;
@@ -32,6 +33,8 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         ['user' => $user, 'tenant' => $tenant, 'profile' => $profile] = $this->userAccountService->register($request->validated());
+
+        $user->notify(new UserCreatedNotification);
 
         $token = $user->createToken('mobile')->plainTextToken;
 
@@ -203,7 +206,6 @@ class AuthController extends Controller
         ], [
             'uuid' => Str::uuid()->toString(),
             'name' => $request->user()->name,
-            'birth_date' => null,
             'sex' => null,
         ]);
     }

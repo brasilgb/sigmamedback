@@ -21,7 +21,6 @@ class Profile extends Model
         'user_id',
         'name',
         'age',
-        'birth_date',
         'sex',
         'height',
         'target_weight',
@@ -32,7 +31,6 @@ class Profile extends Model
     ];
 
     protected $casts = [
-        'birth_date' => 'date',
         'has_diabetes' => 'boolean',
         'has_hypertension' => 'boolean',
     ];

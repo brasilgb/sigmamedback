@@ -37,7 +37,6 @@ test('profile endpoint returns a valid profile for authenticated tenant', functi
             'tenant_id',
             'user_id',
             'name',
-            'birth_date',
             'sex',
             'created_at',
             'updated_at',
@@ -72,7 +71,6 @@ test('authenticated user can create accompanied profile with age', function () {
         ->postJson('/api/v1/profiles', [
             'name' => 'Maria Silva',
             'age' => 68,
-            'birth_date' => '1958-02-10',
             'sex' => 'female',
             'height' => 165,
             'notes' => 'Acompanhamento familiar',
@@ -81,7 +79,6 @@ test('authenticated user can create accompanied profile with age', function () {
     $response->assertCreated();
     $response->assertJsonPath('data.name', 'Maria Silva');
     $response->assertJsonPath('data.age', 68);
-    $response->assertJsonPath('data.birth_date', '1958-02-10T00:00:00.000000Z');
     $response->assertJsonPath('data.sex', 'female');
     $response->assertJsonPath('data.tenant_id', $tenant->id);
     $response->assertJsonPath('data.user_id', $user->id);
@@ -91,7 +88,6 @@ test('authenticated user can create accompanied profile with age', function () {
         'user_id' => $user->id,
         'name' => 'Maria Silva',
         'age' => 68,
-        'birth_date' => '1958-02-10 00:00:00',
         'sex' => 'female',
     ]);
 });
@@ -113,20 +109,17 @@ test('authenticated user can update profile sex', function () {
     $response = $this->withHeaders(['X-Tenant-Id' => $tenant->id])
         ->patchJson('/api/v1/profile', [
             'name' => 'Maria Silva',
-            'birth_date' => '1958-02-10',
             'sex' => 'female',
         ]);
 
     $response->assertOk();
     $response->assertJsonPath('data.name', 'Maria Silva');
-    $response->assertJsonPath('data.birth_date', '1958-02-10T00:00:00.000000Z');
     $response->assertJsonPath('data.sex', 'female');
 
     $this->assertDatabaseHas('profiles', [
         'tenant_id' => $tenant->id,
         'user_id' => $user->id,
         'name' => 'Maria Silva',
-        'birth_date' => '1958-02-10 00:00:00',
         'sex' => 'female',
     ]);
 });
@@ -149,7 +142,6 @@ test('authenticated user can update accompanied profile by id', function () {
         ->postJson('/api/v1/profiles', [
             'name' => 'Maria Silva',
             'age' => 68,
-            'birth_date' => '1958-02-10',
             'sex' => 'female',
             'height' => 165,
             'notes' => 'Acompanhamento familiar',
@@ -161,7 +153,6 @@ test('authenticated user can update accompanied profile by id', function () {
         ->putJson("/api/v1/profiles/{$profileId}", [
             'name' => 'Maria Souza',
             'age' => 69,
-            'birth_date' => '1957-02-10',
             'sex' => 'female',
             'height' => 166,
             'has_hypertension' => true,
@@ -171,7 +162,6 @@ test('authenticated user can update accompanied profile by id', function () {
     $response->assertJsonPath('data.id', $profileId);
     $response->assertJsonPath('data.name', 'Maria Souza');
     $response->assertJsonPath('data.age', 69);
-    $response->assertJsonPath('data.birth_date', '1957-02-10T00:00:00.000000Z');
     $response->assertJsonPath('data.has_hypertension', true);
     $response->assertJsonPath('message', 'Perfil atualizado.');
 
@@ -181,7 +171,6 @@ test('authenticated user can update accompanied profile by id', function () {
         'user_id' => $user->id,
         'name' => 'Maria Souza',
         'age' => 69,
-        'birth_date' => '1957-02-10 00:00:00',
     ]);
 });
 
